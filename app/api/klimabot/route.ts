@@ -1,5 +1,4 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai"
-import { google } from "@ai-sdk/google"
 import { xai } from "@ai-sdk/xai"
 
 export const maxDuration = 30
@@ -31,19 +30,6 @@ RULES
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json()
 
-  // Try Gemini first
-  try {
-    const result = streamText({
-      model: google("gemini-2.0-flash"),
-      system: SYSTEM_PROMPT,
-      messages: await convertToModelMessages(messages),
-    })
-    return result.toUIMessageStreamResponse()
-  } catch (geminiErr: any) {
-    console.log("[KlimaBot] Gemini failed, falling back to Grok:", geminiErr?.message)
-  }
-
-  // Fallback to Grok
   try {
     const result = streamText({
       model: xai("grok-3-mini"),
@@ -51,8 +37,8 @@ export async function POST(req: Request) {
       messages: await convertToModelMessages(messages),
     })
     return result.toUIMessageStreamResponse()
-  } catch (grokErr: any) {
-    console.log("[KlimaBot] Grok also failed:", grokErr?.message)
+  } catch (err: any) {
+    console.log("[KlimaBot] Grok error:", err?.message)
     return new Response(
       JSON.stringify({ error: "KlimaBot is taking a quick break. Please try again." }),
       { status: 500, headers: { "Content-Type": "application/json" } }
