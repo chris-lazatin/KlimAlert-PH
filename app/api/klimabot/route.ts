@@ -1,5 +1,6 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { google } from "@ai-sdk/google"
+import { xai } from "@ai-sdk/xai"
 
 export const maxDuration = 30
 
@@ -28,21 +29,33 @@ RULES
 - Use Philippine units (kph, mm of rain, °C) and local terms (bagyo, baha, lindol, evac center, go-bag).`
 
 export async function POST(req: Request) {
-  try {
-    const { messages }: { messages: UIMessage[] } = await req.json()
+  const { messages }: { messages: UIMessage[] } = await req.json()
 
+  // Try Gemini first
+  try {
     const result = streamText({
-      model: google("gemini-2.0-flash-lite"),
+      model: google("gemini-2.0-flash"),
       system: SYSTEM_PROMPT,
       messages: await convertToModelMessages(messages),
     })
-
     return result.toUIMessageStreamResponse()
-  } catch (err) {
-    console.log("[v0] KlimaBot error:", err)
-    return new Response(JSON.stringify({ error: "KlimaBot is taking a quick break. Please try again." }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+  } catch (geminiErr: any) {
+    console.log("[KlimaBot] Gemini failed, falling back to Grok:", geminiErr?.message)
+  }
+
+  // Fallback to Grok
+  try {
+    const result = streamText({
+      model: xai("grok-3-mini"),
+      system: SYSTEM_PROMPT,
+      messages: await convertToModelMessages(messages),
     })
+    return result.toUIMessageStreamResponse()
+  } catch (grokErr: any) {
+    console.log("[KlimaBot] Grok also failed:", grokErr?.message)
+    return new Response(
+      JSON.stringify({ error: "KlimaBot is taking a quick break. Please try again." }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    )
   }
 }

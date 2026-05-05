@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.67",
     "@ai-sdk/react": "^3.0.170",
+    "@ai-sdk/xai": "^3.0.88",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@paper-design/shaders-react": "0.0.68",
