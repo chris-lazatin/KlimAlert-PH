@@ -25,6 +25,7 @@ const AuthContext = createContext<Ctx | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
+  const router = useRouter()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
