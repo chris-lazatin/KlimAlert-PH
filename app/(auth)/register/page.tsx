@@ -66,13 +66,20 @@ const onSubmit = async (e: React.FormEvent) => {
       return
     }
 
-    await supabase.from("profiles").insert({
-      id: data.user.id,
-      full_name: form.fullName,
-      mobile: form.phone || null,
-      role: form.role,
-      status: form.role === "citizen" ? "active" : "pending",
-    })
+    const { data: barangayData } = await supabase
+  .from("barangays")
+  .select("id")
+  .eq("name", form.barangay)
+  .single()
+
+await supabase.from("profiles").insert({
+  id: data.user.id,
+  full_name: form.fullName,
+  mobile: form.phone || null,
+  role: form.role,
+  barangay_id: barangayData?.id ?? null,
+  status: form.role === "citizen" ? "active" : "pending",
+})
 
     if (form.role === "volunteer" || form.role === "lgu") {
       const qs = new URLSearchParams({ role: form.role, email: form.email })
