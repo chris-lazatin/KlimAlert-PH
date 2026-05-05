@@ -1,6 +1,7 @@
 "use client"
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 
 type AuthRole = "citizen" | "volunteer" | "lgu" | "admin"
@@ -64,8 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()
-    window.location.href = "/login"
-  }, [supabase])
+    router.push("/login")
+  }, [supabase, router])
 
   const value = useMemo(
     () => ({ user, loading, refresh, signOut }),
