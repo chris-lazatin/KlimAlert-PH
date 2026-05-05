@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardTopbar } from "@/components/dashboard/topbar"
 import { AuthProvider } from "@/lib/auth-context"
-import { FloatingChatbot } from "@/components/klimabot/floating-chatbot"
+import { KlimaBot } from "@/components/klimabot/floating-chatbot"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -15,9 +15,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* This renders the floating chatbot bubble inside the dashboard */}
-      <FloatingChatbot />
-      
+      <KlimaBot />
+
     </AuthProvider>
   )
 }
