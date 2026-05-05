@@ -1,4 +1,5 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai"
+import { google } from "@ai-sdk/google"
 
 export const maxDuration = 30
 
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
     const { messages }: { messages: UIMessage[] } = await req.json()
 
     const result = streamText({
-      model: "openai/gpt-5-mini",
+      model: google("gemini-1.5-flash"),
       system: SYSTEM_PROMPT,
       messages: await convertToModelMessages(messages),
     })

@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.67",
     "@ai-sdk/react": "^3.0.170",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
