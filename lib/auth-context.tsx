@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const { data } = await supabase
       .from("profiles")
-      .select("full_name, role, barangay_id")
+      .select("full_name, role, barangay_id, barangays(name)")
       .eq("id", supabaseUser.id)
       .single()
 
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: supabaseUser.email!,
       name: data?.full_name ?? "User",
       role: (data?.role ?? "citizen") as AuthRole,
-      barangay: data?.barangay_id ?? null,
+      barangay: (data?.barangays as { name: string } | null)?.name ?? null,
     })
     setLoading(false)
   }, [supabase])
