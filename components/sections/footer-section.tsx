@@ -11,8 +11,8 @@ const footerLinks = {
   resources: [
     { label: "Preparedness Guide", href: "https://www.gfdrr.org/en/feature-story/protecting-lives-and-property-disaster-risk-philippines" },
     { label: "Emergency Hotlines", href: "https://olongapocity.gov.ph/emergency-hotlines/" },
-    { label: "PAGASA Live", href: "https://www.pagasa.dost.gov.ph", external: true },
-    { label: "NDRRMC", href: "https://ndrrmc.gov.ph", external: true },
+    { label: "PAGASA Live", href: "https://www.pagasa.dost.gov.ph" },
+    { label: "NDRRMC", href: "https://ndrrmc.gov.ph" },
   ],
   legal: [
     { label: "Privacy", href: "https://www.pdc.org/privacy-policy-disaster-alert/" },
