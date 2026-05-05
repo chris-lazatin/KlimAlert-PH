@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   try {
     const result = streamText({
-      model: xai("grok-3-mini"),
+      model: xai("grok-2-1212"),
       system: SYSTEM_PROMPT,
       messages: await convertToModelMessages(messages),
     })
