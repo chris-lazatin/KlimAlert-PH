@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages, type UIMessage } from "ai"
+import { streamText, type UIMessage } from "ai"
 import { xai } from "@ai-sdk/xai"
 
 export const maxDuration = 30
@@ -30,11 +30,17 @@ RULES
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json()
 
+  // Convert UIMessages to simple role/content format
+  const coreMessages = messages.map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+  }))
+
   try {
     const result = streamText({
       model: xai("grok-2-1212"),
       system: SYSTEM_PROMPT,
-      messages: await convertToModelMessages(messages),
+      messages: coreMessages,
     })
     return result.toUIMessageStreamResponse()
   } catch (err: any) {
