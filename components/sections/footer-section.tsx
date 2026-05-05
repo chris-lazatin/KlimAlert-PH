@@ -9,15 +9,15 @@ const footerLinks = {
     { label: "Voices", href: "#testimonials" },
   ],
   resources: [
-    { label: "Preparedness Guide", href: "#" },
-    { label: "Emergency Hotlines", href: "#" },
+    { label: "Preparedness Guide", href: "https://www.gfdrr.org/en/feature-story/protecting-lives-and-property-disaster-risk-philippines" },
+    { label: "Emergency Hotlines", href: "https://olongapocity.gov.ph/emergency-hotlines/" },
     { label: "PAGASA Live", href: "https://www.pagasa.dost.gov.ph", external: true },
     { label: "NDRRMC", href: "https://ndrrmc.gov.ph", external: true },
   ],
   legal: [
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
-    { label: "Data ethics", href: "#" },
+    { label: "Privacy", href: "https://www.pdc.org/privacy-policy-disaster-alert/" },
+    { label: "Terms", href: "https://lawphil.net/statutes/repacts/ra2010/ra_10121_2010.html" },
+    { label: "Data ethics", href: "https://www.preventionweb.net/news/ethics-data-disaster-management-and-crisis-operations" },
   ],
 }
 
@@ -29,7 +29,7 @@ export function FooterSection() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
+              <span className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-linear-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
                 <ShieldAlert className="h-4 w-4 text-zinc-950" strokeWidth={2.5} />
               </span>
               <span className="font-display text-lg font-semibold text-zinc-100 tracking-tight">
@@ -41,7 +41,7 @@ export function FooterSection() {
               project at Gordon College — Olongapo City.
             </p>
 
-            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08]">
+            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/800">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               <span className="text-[11px] font-medium text-emerald-300 tracking-wide">
                 Aligned with SDG 13 · Climate Action
@@ -59,13 +59,13 @@ export function FooterSection() {
             © {new Date().getFullYear()} KlimAlert PH · Christopher V. Lazatin · BSIT 2A, Gordon College.
           </p>
           <div className="flex items-center gap-2">
-            <SocialIcon href="#" label="Email">
+            <SocialIcon href="https://share.google/PLonPjp37xSIZs2tO" label="Email">
               <Mail className="w-4 h-4" />
             </SocialIcon>
-            <SocialIcon href="#" label="Facebook">
+            <SocialIcon href="https://www.facebook.com/" label="Facebook">
               <Facebook className="w-4 h-4" />
             </SocialIcon>
-            <SocialIcon href="#" label="GitHub">
+            <SocialIcon href="https://github.com/" label="GitHub">
               <Github className="w-4 h-4" />
             </SocialIcon>
           </div>
