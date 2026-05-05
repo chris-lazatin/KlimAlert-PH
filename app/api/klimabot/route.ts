@@ -1,5 +1,5 @@
-import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { xai } from "@ai-sdk/xai"
+import { generateText } from "ai"
 
 export const maxDuration = 30
 
@@ -14,34 +14,40 @@ YOUR PERSONA
 WHAT YOU HELP WITH
 1. Disaster preparedness (go-bag, family plan, securing the home).
 2. Real-time guidance during typhoons, floods, earthquakes, fire, tsunami, landslide.
-3. Evacuation guidance — always remind users to check the in-app Evacuation Map which shows ONLY centers with available capacity (FULL/CLOSED ones are hidden).
+3. Evacuation guidance — always remind users to check the in-app Evacuation Map.
 4. Emergency contact direction — point users to: City DRRMO Olongapo, PNP (117), BFP, Red Cross, and James Gordon Hospital.
 5. Bilingual preparedness guides for typhoon, flood, earthquake.
 6. Community hazard reporting — encourage users to report hazards in the app.
 
 RULES
 - Be concise: 2–5 short paragraphs or a tight bullet list.
-- For life-threatening situations, ALWAYS tell the user to dial 911 / 117 first, then guide them.
-- Never invent specific evacuation center capacities — direct users to the in-app Evacuation Map.
-- If asked something outside disaster/safety/preparedness scope, politely steer back to preparedness.
-- Do not provide medical diagnoses; recommend professional help.
-- Use Philippine units (kph, mm of rain, °C) and local terms (bagyo, baha, lindol, evac center, go-bag).`
+- For life-threatening situations, ALWAYS tell the user to dial 911 / 117 first.
+- Never invent specific evacuation center capacities.
+- If asked something outside disaster/safety scope, politely steer back.
+- Do not provide medical diagnoses.
+- Use Philippine units (kph, mm of rain, °C) and local terms (bagyo, baha, lindol, go-bag).`
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json()
-
-  // Only keep the last user message to avoid schema issues
-  const lastUserMessage = messages.filter((m) => m.role === "user").slice(-1)
-
   try {
-    const result = streamText({
+    const { messages } = await req.json()
+
+    // Get the last user message as plain text
+    const lastMessage = messages.filter((m: any) => m.role === "user").pop()
+    const userText = typeof lastMessage?.content === "string"
+      ? lastMessage.content
+      : lastMessage?.content?.[0]?.text ?? "Hello"
+
+    const { text } = await generateText({
       model: xai("grok-2-1212"),
       system: SYSTEM_PROMPT,
-      messages: await convertToModelMessages(lastUserMessage),
+      prompt: userText,
     })
-    return result.toUIMessageStreamResponse()
+
+    return new Response(JSON.stringify({ text }), {
+      headers: { "Content-Type": "application/json" },
+    })
   } catch (err: any) {
-    console.log("[KlimaBot] Grok error:", err?.message)
+    console.log("[KlimaBot] Error:", err?.message)
     return new Response(
       JSON.stringify({ error: "KlimaBot is taking a quick break. Please try again." }),
       { status: 500, headers: { "Content-Type": "application/json" } }
