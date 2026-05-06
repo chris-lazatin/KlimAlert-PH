@@ -1,33 +1,40 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2, LogIn } from "lucide-react"
+import { Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { createClient } from "@/lib/supabase/client"
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter()
+  const [password, setPassword] = useState("")
+  const [confirm, setConfirm] = useState("")
   const [showPwd, setShowPwd] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (!email || !password) {
+    if (!password || !confirm) {
       setError("Punan po lahat ng fields.")
+      return
+    }
+    if (password.length < 6) {
+      setError("Ang password ay dapat hindi bababa sa 6 na characters.")
+      return
+    }
+    if (password !== confirm) {
+      setError("Hindi magkapareho ang mga password. Pakiusap subukan muli.")
       return
     }
     setLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.updateUser({ password })
+    setLoading(false)
     if (error) {
       setError(error.message)
-      setLoading(false)
       return
     }
     router.push("/dashboard")
@@ -35,47 +42,19 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      title="Welcome back, kababayan."
-      subtitle="Mag-sign in para makita ang real-time alerts at evacuation status sa inyong barangay."
-      footer={
-        <>
-          {"Wala pang account? "}
-          <Link href="/register" className="text-emerald-400 hover:text-emerald-300 font-medium">
-            Mag-register
-          </Link>
-        </>
-      }
+      title="I-reset ang password."
+      subtitle="Pumili ng bagong password para sa inyong KlimAlert PH account."
+      footer={null}
     >
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-1.5">
-          <label htmlFor="email" className="text-xs font-medium text-zinc-300 uppercase tracking-wider">
-            Email
+          <label htmlFor="password" className="text-xs font-medium text-zinc-300 uppercase tracking-wider">
+            Bagong Password
           </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="juan.delacruz@email.com"
-            className="w-full h-11 px-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-xs font-medium text-zinc-300 uppercase tracking-wider">
-              Password
-            </label>
-            <Link href="/forgot-password" className="text-xs text-zinc-500 hover:text-zinc-300 transition">
-              Nakalimutan?
-            </Link>
-          </div>
           <div className="relative">
             <input
               id="password"
               type={showPwd ? "text" : "password"}
-              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -83,7 +62,6 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              aria-label={showPwd ? "Hide password" : "Show password"}
               onClick={() => setShowPwd((v) => !v)}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60 transition"
             >
@@ -92,13 +70,19 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 select-none cursor-pointer">
+        <div className="space-y-1.5">
+          <label htmlFor="confirm" className="text-xs font-medium text-zinc-300 uppercase tracking-wider">
+            Kumpirmahin ang Password
+          </label>
           <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-emerald-500/40 focus:ring-offset-0"
+            id="confirm"
+            type={showPwd ? "text" : "password"}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="••••••••"
+            className="w-full h-11 px-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
           />
-          <span className="text-sm text-zinc-400">Tandaan ako sa device na ito</span>
-        </label>
+        </div>
 
         {error && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/[0.07] px-3 py-2.5 text-sm text-red-300">
@@ -114,18 +98,16 @@ export default function LoginPage() {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Sini-sign in…
+              Sine-save…
             </>
           ) : (
             <>
-              <LogIn className="h-4 w-4" />
-              Sign in
+              <ShieldCheck className="h-4 w-4" />
+              I-reset ang Password
             </>
           )}
         </button>
-               
       </form>
     </AuthShell>
   )
 }
-
