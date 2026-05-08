@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: supabaseUser.email!,
       name: data?.full_name ?? "User",
       role: (data?.role ?? "citizen") as AuthRole,
-      barangay: (data?.barangays as { name: string }[] | null)?.[0]?.name ?? null,
+      barangay: (data?.barangays as any)?.name ?? null,
     })
     setLoading(false)
   }, [supabase])
