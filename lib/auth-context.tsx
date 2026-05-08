@@ -24,7 +24,7 @@ type Ctx = {
 const AuthContext = createContext<Ctx | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
@@ -65,8 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
-  await supabase.auth.signOut()
-  window.location.href = "/login"
+  try {
+    await supabase.auth.signOut()
+  } catch {
+    // session may already be gone — that's fine, still redirect
+  } finally {
+    router.push("/login")
+    router.refresh() // clears Next.js router cache so protected pages re-check auth
+  }
 }, [supabase, router])
 
   const value = useMemo(
