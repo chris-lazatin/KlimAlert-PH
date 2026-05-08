@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: supabaseUser.email!,
       name: data?.full_name ?? "User",
       role: (data?.role ?? "citizen") as AuthRole,
-      barangay: (data?.barangays as { name: string } | null)?.name ?? null,
+      barangay: (data?.barangays as { name: string }[] | null)?.[0]?.name ?? null,
     })
     setLoading(false)
   }, [supabase])
@@ -65,10 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
-    router.refresh()
-    router.push("/login")
-  }, [supabase, router])
+  await supabase.auth.signOut()
+  window.location.href = "/login"
+}, [supabase, router])
 
   const value = useMemo(
     () => ({ user, loading, refresh, signOut }),
