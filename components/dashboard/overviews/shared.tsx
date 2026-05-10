@@ -4,6 +4,7 @@
 // purposely small + self-contained so each role overview can pick & choose
 // what to render.
 
+import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import {
@@ -201,15 +202,84 @@ export function LiveAlertsCard() {
 // ---------------- Weather card ----------------
 
 export function WeatherCard() {
+  const [weather, setWeather] = useState<{
+    temp: number
+    humidity: number
+    wind: number
+    description: string
+    risk: string
+    icon: "sun" | "cloud" | "rain" | "storm"
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchWeather() {
+      try {
+        const res = await fetch(
+          "https://api.open-meteo.com/v1/forecast?latitude=14.83&longitude=120.28&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh&timezone=Asia%2FManila"
+        )
+        const data = await res.json()
+        const c = data.current
+        const code: number = c.weather_code
+
+        let description = "Clear skies"
+        let icon: "sun" | "cloud" | "rain" | "storm" = "sun"
+        if (code === 0) { description = "Clear skies"; icon = "sun" }
+        else if (code <= 3) { description = "Partly cloudy"; icon = "cloud" }
+        else if (code <= 48) { description = "Foggy conditions"; icon = "cloud" }
+        else if (code <= 67) { description = "Rainy conditions"; icon = "rain" }
+        else if (code <= 82) { description = "Rain showers"; icon = "rain" }
+        else if (code >= 95) { description = "Thunderstorm"; icon = "storm" }
+
+        const wind = Math.round(c.wind_speed_10m)
+        let risk = "Low"
+        if (wind > 60 || code >= 95) risk = "High"
+        else if (wind > 30 || code >= 61) risk = "Moderate"
+
+        setWeather({
+          temp: Math.round(c.temperature_2m),
+          humidity: c.relative_humidity_2m,
+          wind,
+          description,
+          risk,
+          icon,
+        })
+      } catch {
+        // fallback to static values if fetch fails
+        setWeather({ temp: 28, humidity: 88, wind: 62, description: "Partly cloudy", risk: "High", icon: "cloud" })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchWeather()
+    // Refresh every 10 minutes
+    const interval = setInterval(fetchWeather, 10 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const riskColor = weather?.risk === "High"
+    ? { label: "text-amber-200", bg: "border-amber-500/20 bg-amber-500/[0.05]", icon: "text-amber-400", heading: "text-amber-300" }
+    : weather?.risk === "Moderate"
+    ? { label: "text-yellow-200", bg: "border-yellow-500/20 bg-yellow-500/[0.05]", icon: "text-yellow-400", heading: "text-yellow-300" }
+    : { label: "text-emerald-200", bg: "border-emerald-500/20 bg-emerald-500/[0.05]", icon: "text-emerald-400", heading: "text-emerald-300" }
+
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-linear-to-br from-emerald-500/10 via-zinc-950 to-zinc-950 p-5">
+    <section className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-500/10 via-zinc-950 to-zinc-950 p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] text-emerald-300 uppercase tracking-wider font-semibold">
             Now · Olongapo
           </p>
-          <p className="font-heading text-3xl font-semibold text-zinc-50 mt-1">28°C</p>
-          <p className="text-sm text-zinc-400">Heavy rain · Tropical depression nearby</p>
+          {loading ? (
+            <div className="h-9 w-24 bg-zinc-800 animate-pulse rounded-lg mt-1" />
+          ) : (
+            <p className="font-heading text-3xl font-semibold text-zinc-50 mt-1">{weather?.temp}°C</p>
+          )}
+          {loading ? (
+            <div className="h-4 w-40 bg-zinc-800 animate-pulse rounded mt-1" />
+          ) : (
+            <p className="text-sm text-zinc-400">{weather?.description}</p>
+          )}
         </div>
         <Cloud className="h-12 w-12 text-emerald-400/60" />
       </div>
@@ -217,26 +287,35 @@ export function WeatherCard() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
           <Wind className="h-4 w-4 text-zinc-400" />
           <p className="text-xs text-zinc-500 mt-2">Wind</p>
-          <p className="text-sm font-semibold text-zinc-100">62 kph</p>
+          {loading ? <div className="h-4 w-12 bg-zinc-800 animate-pulse rounded mt-1" /> : (
+            <p className="text-sm font-semibold text-zinc-100">{weather?.wind} kph</p>
+          )}
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
           <Droplets className="h-4 w-4 text-zinc-400" />
           <p className="text-xs text-zinc-500 mt-2">Humidity</p>
-          <p className="text-sm font-semibold text-zinc-100">88%</p>
+          {loading ? <div className="h-4 w-12 bg-zinc-800 animate-pulse rounded mt-1" /> : (
+            <p className="text-sm font-semibold text-zinc-100">{weather?.humidity}%</p>
+          )}
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-          <AlertTriangle className="h-4 w-4 text-amber-400" />
+          <AlertTriangle className={`h-4 w-4 ${riskColor.icon}`} />
           <p className="text-xs text-zinc-500 mt-2">Risk</p>
-          <p className="text-sm font-semibold text-amber-200">High</p>
+          {loading ? <div className="h-4 w-12 bg-zinc-800 animate-pulse rounded mt-1" /> : (
+            <p className={`text-sm font-semibold ${riskColor.label}`}>{weather?.risk}</p>
+          )}
         </div>
       </div>
-      <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
-        <p className="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">
+      <div className={`mt-5 rounded-xl border p-3 ${riskColor.bg}`}>
+        <p className={`text-[11px] uppercase tracking-wider font-semibold ${riskColor.heading}`}>
           Action recommended
         </p>
         <p className="text-sm text-zinc-200 mt-1 leading-snug">
-          Ihanda na ang go-bag at i-charge ang phones. I-monitor ang mga creek sa Sta. Rita &
-          Mabayuan.
+          {weather?.risk === "High"
+            ? "Ihanda na ang go-bag at i-charge ang phones. I-monitor ang mga creek sa Sta. Rita & Mabayuan."
+            : weather?.risk === "Moderate"
+            ? "Mag-ingat sa pagbiyahe. Bantayan ang mga weather updates mula sa PAGASA."
+            : "Ligtas ang panahon ngayon. Patuloy na i-monitor ang mga weather updates."}
         </p>
       </div>
     </section>
