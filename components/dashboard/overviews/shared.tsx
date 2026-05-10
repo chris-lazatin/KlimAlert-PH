@@ -364,7 +364,7 @@ export function OpenCentersCard({ limit = 4, selectedId, onSelect }: { limit?: n
           const meta = STATUS_META[c.status]
           const pct = Math.round((c.occupancy / c.capacity) * 100)
           return (
-            <li key={c.id} onClick={() => onSelect?.(c.id)} className={cn("px-5 py-3.5 hover:bg-zinc-900/40 transition-colors cursor-pointer", selectedId === c.id && "bg-zinc-900/60 border-l-2 border-emerald-500")}>
+            <li key={c.id} onClick={() => onSelect?.(selectedId === c.id ? "" : c.id)} className={cn("px-5 py-3.5 hover:bg-zinc-900/40 transition-colors cursor-pointer", selectedId === c.id && "bg-zinc-900/60 border-l-2 border-emerald-500")}>
               <div className="flex items-center justify-between gap-2">
                 <p className="font-medium text-sm text-zinc-100 truncate">{c.name}</p>
                 <span
