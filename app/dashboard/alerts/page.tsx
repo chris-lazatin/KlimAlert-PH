@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import {
   Radio,
   AlertTriangle,
@@ -208,6 +208,15 @@ export default function AlertsPage() {
     })
   }, [sevFilter, sourceFilter])
 
+  useEffect(() => {
+  const hash = window.location.hash.replace("#", "")
+  if (hash) {
+    setTimeout(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 300)
+  }
+}, [])
+
   const counts = useMemo(
     () => ({
       critical: ALERTS.filter((a) => a.severity === "critical").length,
@@ -322,6 +331,7 @@ export default function AlertsPage() {
             return (
               <article
                 key={a.id}
+                id={a.id}
                 className={`relative rounded-2xl border border-zinc-800 bg-gradient-to-br ${sev.bg} bg-zinc-950 overflow-hidden hover:border-zinc-700 transition-colors`}
               >
                 <div className="px-5 py-4">

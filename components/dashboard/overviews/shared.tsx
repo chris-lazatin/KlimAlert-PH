@@ -114,6 +114,7 @@ export function StatGrid({ stats }: { stats: Stat[] }) {
 export const SAMPLE_ALERTS = [
   {
     id: 1,
+    alertPageId: "a-001",
     severity: "WARNING",
     title: "Tropical Storm Karding · Signal #2",
     desc: "Public storm warning sa Zambales. Inaasahang lakas ng hangin: 90-120 kph in 24 hrs.",
@@ -124,6 +125,7 @@ export const SAMPLE_ALERTS = [
   },
   {
     id: 2,
+    alertPageId: "a-002",
     severity: "ADVISORY",
     title: "Flood watch · Mabayuan & Sta. Rita",
     desc: "Expected heavy rainfall sa loob ng 6 hrs. I-monitor ang creek levels.",
@@ -134,6 +136,7 @@ export const SAMPLE_ALERTS = [
   },
   {
     id: 3,
+    alertPageId: "a-005",
     severity: "INFO",
     title: "Pre-emptive evacuation prep",
     desc: "LGU coordinating sa barangays para sa pre-emptive evacuation ng coastal areas.",
@@ -168,7 +171,8 @@ export function LiveAlertsCard() {
       </header>
       <ul className="divide-y divide-zinc-900">
         {SAMPLE_ALERTS.map((a) => (
-          <li key={a.id} className="px-5 py-4 flex gap-4 hover:bg-zinc-900/40 transition-colors">
+          <li key={a.id} className="hover:bg-zinc-900/40 transition-colors cursor-pointer">
+            <Link href={`/dashboard/alerts#${a.alertPageId}`} className="px-5 py-4 flex gap-4 w-full">
             <span className={cn("mt-0.5 h-2 w-2 rounded-full shrink-0", a.dotClass)} aria-hidden />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -189,6 +193,7 @@ export function LiveAlertsCard() {
                 <span>{a.time}</span>
               </div>
             </div>
+            </Link>
           </li>
         ))}
       </ul>
