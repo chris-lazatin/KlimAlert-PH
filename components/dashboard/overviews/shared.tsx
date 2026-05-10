@@ -264,7 +264,7 @@ export function WeatherCard() {
     : { label: "text-emerald-200", bg: "border-emerald-500/20 bg-emerald-500/[0.05]", icon: "text-emerald-400", heading: "text-emerald-300" }
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-500/10 via-zinc-950 to-zinc-950 p-5">
+    <section className="rounded-2xl border border-zinc-800 bg-linear-to-br from-emerald-500/10 via-zinc-950 to-zinc-950 p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] text-emerald-300 uppercase tracking-wider font-semibold">
