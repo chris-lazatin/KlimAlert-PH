@@ -257,7 +257,7 @@ export default function AlertsPage() {
       </div>
 
       {/* Live ticker */}
-      <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-500/[0.04] via-zinc-950 to-zinc-950 px-5 py-4">
+      <div className="rounded-2xl border border-zinc-800 bg-linear-to-br from-emerald-500/4 via-zinc-950 to-zinc-950 px-5 py-4">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-300">
             <span className="relative flex h-2 w-2">
@@ -332,7 +332,7 @@ export default function AlertsPage() {
               <article
                 key={a.id}
                 id={a.id}
-                className={`relative rounded-2xl border border-zinc-800 bg-gradient-to-br ${sev.bg} bg-zinc-950 overflow-hidden hover:border-zinc-700 transition-colors`}
+                className={`relative rounded-2xl border border-zinc-800 bg-linear-to-br ${sev.bg} bg-zinc-950 overflow-hidden hover:border-zinc-700 transition-colors`}
               >
                 <div className="px-5 py-4">
                   <div className="flex items-start gap-4">

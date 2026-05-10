@@ -205,7 +205,7 @@ export function LiveAlertsCard() {
 
 export function WeatherCard() {
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-500/10 via-zinc-950 to-zinc-950 p-5">
+    <section className="rounded-2xl border border-zinc-800 bg-linear-to-br from-emerald-500/10 via-zinc-950 to-zinc-950 p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] text-emerald-300 uppercase tracking-wider font-semibold">
@@ -233,7 +233,7 @@ export function WeatherCard() {
           <p className="text-sm font-semibold text-amber-200">High</p>
         </div>
       </div>
-      <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/[0.05] p-3">
+      <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
         <p className="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">
           Action recommended
         </p>
@@ -266,7 +266,7 @@ export function EvacuationMapCard() {
           <ArrowUpRight className="h-3 w-3" />
         </Link>
       </header>
-      <div className="h-[440px] p-3">
+      <div className="h-110 p-3">
         <EvacuationMap height="100%" />
       </div>
     </div>
@@ -381,7 +381,7 @@ export function PrimaryActionLink({
   return (
     <Link
       href={href}
-      className="h-10 px-4 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 text-zinc-950 text-sm font-semibold flex items-center gap-1.5 hover:brightness-110 transition shadow-[0_8px_24px_-8px_rgba(16,185,129,0.6)]"
+      className="h-10 px-4 rounded-lg bg-linear-to-br from-emerald-400 to-emerald-600 text-zinc-950 text-sm font-semibold flex items-center gap-1.5 hover:brightness-110 transition shadow-[0_8px_24px_-8px_rgba(16,185,129,0.6)]"
     >
       <Icon className="h-4 w-4" />
       {children}
