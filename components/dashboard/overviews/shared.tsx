@@ -171,31 +171,28 @@ export function LiveAlertsCard() {
       </header>
       <ul className="divide-y divide-zinc-900">
         {SAMPLE_ALERTS.map((a) => (
-          <li key={a.id} className="hover:bg-zinc-900/40 transition-colors cursor-pointer">
-            <Link href={`/dashboard/alerts#${a.alertPageId}`} className="px-5 py-4 flex gap-4 w-full">
-            <span className={cn("mt-0.5 h-2 w-2 rounded-full shrink-0", a.dotClass)} aria-hidden />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span
-                  className={cn(
-                    "text-[10px] font-semibold tracking-wider uppercase rounded-md border px-2 py-0.5",
-                    a.severityClass,
-                  )}
-                >
-                  {a.severity}
-                </span>
-                <p className="font-medium text-zinc-100 text-sm">{a.title}</p>
-              </div>
-              <p className="text-sm text-zinc-400 mt-1 leading-relaxed">{a.desc}</p>
-              <div className="flex items-center gap-3 mt-2 text-[11px] text-zinc-500">
-                <span>{a.source}</span>
-                <span aria-hidden>·</span>
-                <span>{a.time}</span>
-              </div>
-            </div>
-            </Link>
-          </li>
-        ))}
+  <li
+    key={a.id}
+    onClick={() => window.location.href = `/dashboard/alerts#${a.alertPageId}`}
+    className="px-5 py-4 flex gap-4 hover:bg-zinc-900/40 transition-colors cursor-pointer"
+  >
+    <span className={cn("mt-0.5 h-2 w-2 rounded-full shrink-0", a.dotClass)} aria-hidden />
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={cn("text-[10px] font-semibold tracking-wider uppercase rounded-md border px-2 py-0.5", a.severityClass)}>
+          {a.severity}
+        </span>
+        <p className="font-medium text-zinc-100 text-sm">{a.title}</p>
+      </div>
+      <p className="text-sm text-zinc-400 mt-1 leading-relaxed">{a.desc}</p>
+      <div className="flex items-center gap-3 mt-2 text-[11px] text-zinc-500">
+        <span>{a.source}</span>
+        <span aria-hidden>·</span>
+        <span>{a.time}</span>
+      </div>
+    </div>
+  </li>
+))}
       </ul>
     </section>
   )
