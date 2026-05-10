@@ -5,6 +5,7 @@
 // Map, Emergency Contact Access).
 
 import { Activity, Megaphone, ShieldAlert, Users } from "lucide-react"
+import { useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import {
   EmergencyContactsCard,
@@ -28,6 +29,7 @@ const STATS: Stat[] = [
 
 export function CitizenOverview() {
   const { user } = useAuth()
+  const [selectedCenter, setSelectedCenter] = useState<string | null>(null)
   const firstName = (user?.name ?? "Resident").split(" ")[0]
   const barangay = user?.barangay ?? "East Tapinac"
 
@@ -65,9 +67,9 @@ export function CitizenOverview() {
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2">
-          <EvacuationMapCard />
+          <EvacuationMapCard selectedId={selectedCenter} onSelect={setSelectedCenter} />
         </div>
-        <OpenCentersCard />
+        <OpenCentersCard selectedId={selectedCenter} onSelect={setSelectedCenter} />
       </section>
 
       <EmergencyContactsCard />

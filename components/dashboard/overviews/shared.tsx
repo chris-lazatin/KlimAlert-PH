@@ -324,7 +324,7 @@ export function WeatherCard() {
 
 // ---------------- Evacuation map card ----------------
 
-export function EvacuationMapCard() {
+export function EvacuationMapCard({ selectedId, onSelect }: { selectedId?: string | null, onSelect?: (id: string) => void }) {
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
       <header className="flex items-center justify-between px-5 py-4 border-b border-zinc-900">
@@ -343,7 +343,7 @@ export function EvacuationMapCard() {
         </Link>
       </header>
       <div className="h-110 p-3">
-        <EvacuationMap height="100%" />
+        <EvacuationMap height="100%" selectedId={selectedId} onSelect={onSelect} />
       </div>
     </div>
   )
@@ -351,7 +351,7 @@ export function EvacuationMapCard() {
 
 // ---------------- Open evac centers list ----------------
 
-export function OpenCentersCard({ limit = 4 }: { limit?: number }) {
+export function OpenCentersCard({ limit = 4, selectedId, onSelect }: { limit?: number, selectedId?: string | null, onSelect?: (id: string) => void }) {
   const available = getAvailableCenters().slice(0, limit)
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col">
@@ -364,7 +364,7 @@ export function OpenCentersCard({ limit = 4 }: { limit?: number }) {
           const meta = STATUS_META[c.status]
           const pct = Math.round((c.occupancy / c.capacity) * 100)
           return (
-            <li key={c.id} className="px-5 py-3.5 hover:bg-zinc-900/40 transition-colors">
+            <li key={c.id} onClick={() => onSelect?.(c.id)} className={cn("px-5 py-3.5 hover:bg-zinc-900/40 transition-colors cursor-pointer", selectedId === c.id && "bg-zinc-900/60 border-l-2 border-emerald-500")}>
               <div className="flex items-center justify-between gap-2">
                 <p className="font-medium text-sm text-zinc-100 truncate">{c.name}</p>
                 <span
@@ -390,6 +390,13 @@ export function OpenCentersCard({ limit = 4 }: { limit?: number }) {
                 </div>
                 <span className="text-[11px] text-zinc-500 tabular-nums">{pct}%</span>
               </div>
+              {selectedId === c.id && (
+          <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-[11px] text-zinc-400 space-y-1">
+            <p>{c.address}</p>
+            <p>Contact: <span className="text-zinc-200 font-medium">{c.contact}</span></p>
+            <p>{c.occupancy}/{c.capacity} occupied ({pct}%)</p>
+          </div>
+        )}
             </li>
           )
         })}
