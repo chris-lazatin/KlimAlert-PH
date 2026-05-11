@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { X, MapPin, Clock, ShieldCheck, User, CheckCircle2, Send, ChevronDown, ChevronUp } from "lucide-react"
 import {
   HAZARD_META,
@@ -22,6 +22,7 @@ function timeAgo(iso: string): string {
 }
 
 type SituationalUpdate = {
+  id: number
   text: string
   by: string
   at: string
@@ -43,6 +44,7 @@ export function ReportModal({
   const [updateText, setUpdateText] = useState("")
   const [updates, setUpdates] = useState<SituationalUpdate[]>([])
   const [loading, setLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   // Close on Escape key
   useEffect(() => {
@@ -60,12 +62,34 @@ export function ReportModal({
     return () => { document.body.style.overflow = "" }
   }, [report])
 
-  // Reset state when report changes
+  // Load situational updates from Supabase when report opens
+  const fetchUpdates = useCallback(async () => {
+    if (!report) return
+    const supabase = createClient()
+    const { data } = await supabase
+      .from("report_updates")
+      .select("id, text, created_at, profiles!volunteer_id(full_name)")
+      .eq("report_id", report.id)
+      .order("created_at", { ascending: true })
+    if (data) {
+      setUpdates(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data.map((u: any) => ({
+          id: u.id,
+          text: u.text,
+          by: u.profiles?.full_name ?? "Volunteer",
+          at: u.created_at,
+        }))
+      )
+    }
+  }, [report])
+
   useEffect(() => {
     setShowUpdateForm(false)
     setUpdateText("")
     setUpdates([])
-  }, [report?.id])
+    fetchUpdates()
+  }, [report?.id, fetchUpdates])
 
   if (!report) return null
 
@@ -77,36 +101,45 @@ export function ReportModal({
   const handleVerify = async () => {
     setLoading(true)
     const supabase = createClient()
-    await supabase
+    const { error } = await supabase
       .from("reports")
       .update({ status: "verified" })
       .eq("id", report.id)
     setLoading(false)
-    onStatusChange?.()
-    onClose()
+    if (!error) {
+      onStatusChange?.()
+      onClose()
+    }
   }
 
   const handleResolve = async () => {
     setLoading(true)
     const supabase = createClient()
-    await supabase
+    const { error } = await supabase
       .from("reports")
       .update({ status: "resolved" })
       .eq("id", report.id)
     setLoading(false)
-    onStatusChange?.()
-    onClose()
+    if (!error) {
+      onStatusChange?.()
+      onClose()
+    }
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     const text = updateText.trim()
     if (!text) return
-    setUpdates((prev) => [
-      ...prev,
-      { text, by: user?.name ?? "Volunteer", at: new Date().toISOString() },
-    ])
-    setUpdateText("")
-    setShowUpdateForm(false)
+    setSubmitting(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from("report_updates")
+      .insert({ report_id: report.id, volunteer_id: user?.id, text })
+    setSubmitting(false)
+    if (!error) {
+      setUpdateText("")
+      setShowUpdateForm(false)
+      fetchUpdates()
+    }
   }
 
   return (
@@ -119,7 +152,7 @@ export function ReportModal({
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl overflow-hidden">
+        <div className="pointer-events-auto w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
 
           {/* Photo */}
           {report.photoUrl && (
@@ -180,12 +213,12 @@ export function ReportModal({
             {/* Description */}
             <p className="text-sm text-zinc-300 leading-relaxed">{report.description}</p>
 
-            {/* Situational updates */}
+            {/* Situational updates from Supabase */}
             {updates.length > 0 && (
               <div className="space-y-2">
                 <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Situational updates</p>
-                {updates.map((u, i) => (
-                  <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-[11px]">
+                {updates.map((u) => (
+                  <div key={u.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-[11px]">
                     <p className="text-zinc-300">{u.text}</p>
                     <p className="text-zinc-500 mt-1">By {u.by} · {timeAgo(u.at)}</p>
                   </div>
@@ -206,7 +239,8 @@ export function ReportModal({
                 />
                 <button
                   onClick={handleUpdate}
-                  className="h-9 px-3 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition"
+                  disabled={submitting}
+                  className="h-9 px-3 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50 transition"
                 >
                   <Send className="h-3.5 w-3.5" />
                 </button>
@@ -248,7 +282,7 @@ export function ReportModal({
                     className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50 transition"
                   >
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Verify report
+                    {loading ? "Verifying…" : "Verify report"}
                   </button>
                 )}
                 {report.status === "verified" && (
@@ -258,7 +292,7 @@ export function ReportModal({
                     className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/20 disabled:opacity-50 transition"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    Mark resolved
+                    {loading ? "Saving…" : "Mark resolved"}
                   </button>
                 )}
                 <button
