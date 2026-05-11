@@ -285,7 +285,7 @@ export function ReportModal({
                     {loading ? "Verifying…" : "Verify report"}
                   </button>
                 )}
-                {report.status === "verified" && (
+                {report.status === "verified" && user?.role === "lgu" && (
                   <button
                     onClick={handleResolve}
                     disabled={loading}
