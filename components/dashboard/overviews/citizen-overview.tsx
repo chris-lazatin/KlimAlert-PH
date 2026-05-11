@@ -69,7 +69,7 @@ export function CitizenOverview() {
         <div className="xl:col-span-2">
           <EvacuationMapCard selectedId={selectedCenter} onSelect={setSelectedCenter} />
         </div>
-        <OpenCentersCard selectedId={selectedCenter} onSelect={setSelectedCenter} />
+        <OpenCentersCard limit={10} selectedId={selectedCenter} onSelect={setSelectedCenter} />
       </section>
 
       <EmergencyContactsCard />
