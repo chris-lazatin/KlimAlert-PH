@@ -1,13 +1,15 @@
 "use client"
 
-import { useEffect } from "react"
-import { X, MapPin, Clock, ShieldCheck, User, AlertTriangle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { X, MapPin, Clock, ShieldCheck, User, CheckCircle2, Send, ChevronDown, ChevronUp } from "lucide-react"
 import {
   HAZARD_META,
   SEVERITY_META,
   STATUS_META,
   type HazardReport,
 } from "@/lib/hazard-reports"
+import { useAuth } from "@/lib/auth-context"
+import { createClient } from "@/lib/supabase/client"
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -19,13 +21,29 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`
 }
 
+type SituationalUpdate = {
+  text: string
+  by: string
+  at: string
+}
+
 export function ReportModal({
   report,
   onClose,
+  onStatusChange,
 }: {
   report: HazardReport | null
   onClose: () => void
+  onStatusChange?: () => void
 }) {
+  const { user } = useAuth()
+  const isVolunteer = user?.role === "volunteer"
+
+  const [showUpdateForm, setShowUpdateForm] = useState(false)
+  const [updateText, setUpdateText] = useState("")
+  const [updates, setUpdates] = useState<SituationalUpdate[]>([])
+  const [loading, setLoading] = useState(false)
+
   // Close on Escape key
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -42,12 +60,54 @@ export function ReportModal({
     return () => { document.body.style.overflow = "" }
   }, [report])
 
+  // Reset state when report changes
+  useEffect(() => {
+    setShowUpdateForm(false)
+    setUpdateText("")
+    setUpdates([])
+  }, [report?.id])
+
   if (!report) return null
 
   const hazard = HAZARD_META[report.type]
   const sev = SEVERITY_META[report.severity]
   const stat = STATUS_META[report.status]
   const Icon = hazard.icon
+
+  const handleVerify = async () => {
+    setLoading(true)
+    const supabase = createClient()
+    await supabase
+      .from("reports")
+      .update({ status: "verified" })
+      .eq("id", report.id)
+    setLoading(false)
+    onStatusChange?.()
+    onClose()
+  }
+
+  const handleResolve = async () => {
+    setLoading(true)
+    const supabase = createClient()
+    await supabase
+      .from("reports")
+      .update({ status: "resolved" })
+      .eq("id", report.id)
+    setLoading(false)
+    onStatusChange?.()
+    onClose()
+  }
+
+  const handleUpdate = () => {
+    const text = updateText.trim()
+    if (!text) return
+    setUpdates((prev) => [
+      ...prev,
+      { text, by: user?.name ?? "Volunteer", at: new Date().toISOString() },
+    ])
+    setUpdateText("")
+    setShowUpdateForm(false)
+  }
 
   return (
     <>
@@ -118,13 +178,40 @@ export function ReportModal({
             </div>
 
             {/* Description */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-              <p className="text-xs text-zinc-500 font-medium mb-1.5 flex items-center gap-1.5">
-                <AlertTriangle className="h-3 w-3" />
-                Description
-              </p>
-              <p className="text-sm text-zinc-200 leading-relaxed">{report.description}</p>
-            </div>
+            <p className="text-sm text-zinc-300 leading-relaxed">{report.description}</p>
+
+            {/* Situational updates */}
+            {updates.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Situational updates</p>
+                {updates.map((u, i) => (
+                  <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-[11px]">
+                    <p className="text-zinc-300">{u.text}</p>
+                    <p className="text-zinc-500 mt-1">By {u.by} · {timeAgo(u.at)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Situational update form */}
+            {isVolunteer && showUpdateForm && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={updateText}
+                  onChange={(e) => setUpdateText(e.target.value)}
+                  placeholder="e.g. Rising water levels, road now passable..."
+                  className="flex-1 h-9 px-3 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition"
+                  onKeyDown={(e) => e.key === "Enter" && handleUpdate()}
+                />
+                <button
+                  onClick={handleUpdate}
+                  className="h-9 px-3 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
 
             {/* Reporter & time */}
             <div className="flex items-center justify-between gap-3 pt-1">
@@ -150,6 +237,39 @@ export function ReportModal({
                 )}
               </div>
             </div>
+
+            {/* Volunteer actions */}
+            {isVolunteer && (
+              <div className="flex flex-wrap gap-2 pt-1 border-t border-zinc-800">
+                {report.status === "pending" && (
+                  <button
+                    onClick={handleVerify}
+                    disabled={loading}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50 transition"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Verify report
+                  </button>
+                )}
+                {report.status === "verified" && (
+                  <button
+                    onClick={handleResolve}
+                    disabled={loading}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/20 disabled:opacity-50 transition"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Mark resolved
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowUpdateForm((v) => !v)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition"
+                >
+                  {showUpdateForm ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  Situational update
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

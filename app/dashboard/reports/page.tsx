@@ -83,7 +83,11 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-5">
-      <ReportModal report={selected} onClose={() => setSelected(null)} />
+      <ReportModal
+        report={selected}
+        onClose={() => setSelected(null)}
+        onStatusChange={fetchReports}
+      />
       <div className="flex flex-col gap-2">
         <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">
           Community reporting
