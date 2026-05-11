@@ -222,6 +222,7 @@ export default function AlertsPage() {
       critical: ALERTS.filter((a) => a.severity === "critical").length,
       warning: ALERTS.filter((a) => a.severity === "warning").length,
       advisory: ALERTS.filter((a) => a.severity === "advisory").length,
+      info: ALERTS.filter((a) => a.severity === "info").length,
       total: ALERTS.length,
     }),
     [],
@@ -280,6 +281,12 @@ export default function AlertsPage() {
               <span className="h-1 w-1 rounded-full bg-emerald-400" />
               {counts.advisory} advisory
             </span>
+            {counts.info > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-700/30 bg-zinc-800/16 px-2 py-0.5 text-[11px]">
+            <span className="h-1 w-1 rounded-full bg-zinc-400" />
+            {counts.info} info
+          </span>
+        )}
           </div>
         </div>
       </div>
