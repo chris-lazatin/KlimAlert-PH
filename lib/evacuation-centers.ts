@@ -30,7 +30,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "OPEN",
     facilities: ["Toilets", "Generator", "First-aid"],
     manager: "Brgy. East Tapinac DRRM",
-    contact: "+63 947 555 0112",
+    contact: "(047) 223-3444",
   },
   {
     id: "ec-002",
@@ -44,7 +44,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "OPEN",
     facilities: ["Toilets", "Generator", "Kitchen", "Medical"],
     manager: "DepEd Olongapo",
-    contact: "+63 916 222 0931",
+    contact: "(047) 223-3744",
   },
   {
     id: "ec-003",
@@ -58,7 +58,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "NEAR_FULL",
     facilities: ["Toilets", "First-aid"],
     manager: "Brgy. Santa Rita",
-    contact: "+63 928 411 5512",
+    contact: "(047) 222-5173",
   },
   {
     id: "ec-004",
@@ -72,7 +72,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "FULL",
     facilities: ["Toilets", "Generator"],
     manager: "DepEd · Brgy. Old Cabalan",
-    contact: "+63 919 884 7720",
+    contact: "(047) 603-1700",
   },
   {
     id: "ec-005",
@@ -86,7 +86,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "OPEN",
     facilities: ["Toilets", "Generator", "Kitchen", "Medical", "Wi-Fi"],
     manager: "Gordon College DRRMO",
-    contact: "+63 935 770 1024",
+    contact: "(047) 222-4080",
   },
   {
     id: "ec-006",
@@ -100,7 +100,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "OPEN",
     facilities: ["Toilets", "First-aid"],
     manager: "Brgy. Kalaklan",
-    contact: "+63 942 110 8841",
+    contact: "(047) 224-6983",
   },
   {
     id: "ec-007",
@@ -114,7 +114,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "NEAR_FULL",
     facilities: ["Toilets", "Generator"],
     manager: "Brgy. New Kalalake",
-    contact: "+63 923 555 0044",
+    contact: "(047) 224-8264",
   },
   {
     id: "ec-008",
@@ -128,7 +128,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "OPEN",
     facilities: ["Toilets", "Generator", "Kitchen"],
     manager: "Brgy. Mabayuan",
-    contact: "+63 936 220 7711",
+    contact: "(047) 602-3900",
   },
   {
     id: "ec-009",
@@ -142,7 +142,7 @@ export const EVAC_CENTERS: EvacuationCenter[] = [
     status: "CLOSED",
     facilities: ["Toilets"],
     manager: "Brgy. Barretto",
-    contact: "+63 921 553 1290",
+    contact: "(047) 222-4295",
   },
 ]
 
