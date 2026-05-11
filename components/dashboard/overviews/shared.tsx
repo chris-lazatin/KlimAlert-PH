@@ -359,7 +359,7 @@ export function OpenCentersCard({ limit = 4, selectedId, onSelect }: { limit?: n
         <h2 className="font-heading text-base font-semibold text-zinc-100">Nearest open centers</h2>
         <p className="text-[11px] text-zinc-500 mt-0.5">{available.length} available right now</p>
       </header>
-      <ul className="flex-1 divide-y divide-zinc-900 overflow-y-auto max-h-[440px]">
+      <ul className="flex-1 divide-y divide-zinc-900 overflow-y-auto max-h-110">
         {available.map((c) => {
           const meta = STATUS_META[c.status]
           const pct = Math.round((c.occupancy / c.capacity) * 100)
