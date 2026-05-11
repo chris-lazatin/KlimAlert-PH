@@ -354,12 +354,12 @@ export function EvacuationMapCard({ selectedId, onSelect }: { selectedId?: strin
 export function OpenCentersCard({ limit = 4, selectedId, onSelect }: { limit?: number, selectedId?: string | null, onSelect?: (id: string) => void }) {
   const available = getAvailableCenters().slice(0, limit)
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col h-full">
       <header className="px-5 py-4 border-b border-zinc-900">
         <h2 className="font-heading text-base font-semibold text-zinc-100">Nearest open centers</h2>
         <p className="text-[11px] text-zinc-500 mt-0.5">{available.length} available right now</p>
       </header>
-      <ul className="flex-1 divide-y divide-zinc-900">
+      <ul className="flex-1 divide-y divide-zinc-900 overflow-y-auto max-h-[440px]">
         {available.map((c) => {
           const meta = STATUS_META[c.status]
           const pct = Math.round((c.occupancy / c.capacity) * 100)
