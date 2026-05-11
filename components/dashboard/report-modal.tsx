@@ -1,76 +1,89 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useCallback } from "react"
-import { X, MapPin, Clock, ShieldCheck, User, CheckCircle2, Send, ChevronDown, ChevronUp } from "lucide-react"
+import { useEffect, useState, useCallback } from "react";
+import {
+  X,
+  MapPin,
+  Clock,
+  ShieldCheck,
+  User,
+  CheckCircle2,
+  Send,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import {
   HAZARD_META,
   SEVERITY_META,
   STATUS_META,
   type HazardReport,
-} from "@/lib/hazard-reports"
-import { useAuth } from "@/lib/auth-context"
-import { createClient } from "@/lib/supabase/client"
+} from "@/lib/hazard-reports";
+import { useAuth } from "@/lib/auth-context";
+import { createClient } from "@/lib/supabase/client";
 
 function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60_000)
-  if (m < 1) return "just now"
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
 type SituationalUpdate = {
-  id: number
-  text: string
-  by: string
-  at: string
-}
+  id: number;
+  text: string;
+  by: string;
+  at: string;
+};
 
 export function ReportModal({
   report,
   onClose,
   onStatusChange,
 }: {
-  report: HazardReport | null
-  onClose: () => void
-  onStatusChange?: () => void
+  report: HazardReport | null;
+  onClose: () => void;
+  onStatusChange?: () => void;
 }) {
-  const { user } = useAuth()
-  const isVolunteer = user?.role === "volunteer"
+  const { user } = useAuth();
+  const isVolunteer = user?.role === "volunteer";
+  const isLGU = user?.role === "lgu" || user?.role === "admin";
 
-  const [showUpdateForm, setShowUpdateForm] = useState(false)
-  const [updateText, setUpdateText] = useState("")
-  const [updates, setUpdates] = useState<SituationalUpdate[]>([])
-  const [loading, setLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [updateText, setUpdateText] = useState("");
+  const [updates, setUpdates] = useState<SituationalUpdate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Close on Escape key
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose()
+      if (e.key === "Escape") onClose();
     }
-    document.addEventListener("keydown", onKey)
-    return () => document.removeEventListener("keydown", onKey)
-  }, [onClose])
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   // Prevent body scroll when open
   useEffect(() => {
-    if (report) document.body.style.overflow = "hidden"
-    else document.body.style.overflow = ""
-    return () => { document.body.style.overflow = "" }
-  }, [report])
+    if (report) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [report]);
 
   // Load situational updates from Supabase when report opens
   const fetchUpdates = useCallback(async () => {
-    if (!report) return
-    const supabase = createClient()
+    if (!report) return;
+    const supabase = createClient();
     const { data } = await supabase
       .from("report_updates")
       .select("id, text, created_at, profiles!volunteer_id(full_name)")
       .eq("report_id", report.id)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: true });
     if (data) {
       setUpdates(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,68 +92,82 @@ export function ReportModal({
           text: u.text,
           by: u.profiles?.full_name ?? "Volunteer",
           at: u.created_at,
-        }))
-      )
+        })),
+      );
     }
-  }, [report])
+  }, [report]);
 
   useEffect(() => {
-    setShowUpdateForm(false)
-    setUpdateText("")
-    setUpdates([])
-    fetchUpdates()
-  }, [report?.id, fetchUpdates])
+    setShowUpdateForm(false);
+    setUpdateText("");
+    setUpdates([]);
+    fetchUpdates();
+  }, [report?.id, fetchUpdates]);
 
-  if (!report) return null
+  if (!report) return null;
 
-  const hazard = HAZARD_META[report.type]
-  const sev = SEVERITY_META[report.severity]
-  const stat = STATUS_META[report.status]
-  const Icon = hazard.icon
+  const hazard = HAZARD_META[report.type];
+  const sev = SEVERITY_META[report.severity];
+  const stat = STATUS_META[report.status];
+  const Icon = hazard.icon;
 
   const handleVerify = async () => {
-    setLoading(true)
-    const supabase = createClient()
+    setLoading(true);
+    const supabase = createClient();
     const { error } = await supabase
       .from("reports")
       .update({ status: "verified" })
-      .eq("id", report.id)
-    setLoading(false)
+      .eq("id", report.id);
+    setLoading(false);
     if (!error) {
-      onStatusChange?.()
-      onClose()
+      onStatusChange?.();
+      onClose();
     }
-  }
+  };
 
   const handleResolve = async () => {
-    setLoading(true)
-    const supabase = createClient()
+    setLoading(true);
+    const supabase = createClient();
     const { error } = await supabase
       .from("reports")
       .update({ status: "resolved" })
-      .eq("id", report.id)
-    setLoading(false)
+      .eq("id", report.id);
+    setLoading(false);
     if (!error) {
-      onStatusChange?.()
-      onClose()
+      onStatusChange?.();
+      onClose();
     }
-  }
+  };
+
+  const handleDismiss = async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("reports")
+      .update({ status: "dismissed" })
+      .eq("id", report.id);
+    setLoading(false);
+    if (!error) {
+      onStatusChange?.();
+      onClose();
+    }
+  };
 
   const handleUpdate = async () => {
-    const text = updateText.trim()
-    if (!text) return
-    setSubmitting(true)
-    const supabase = createClient()
+    const text = updateText.trim();
+    if (!text) return;
+    setSubmitting(true);
+    const supabase = createClient();
     const { error } = await supabase
       .from("report_updates")
-      .insert({ report_id: report.id, volunteer_id: user?.id, text })
-    setSubmitting(false)
+      .insert({ report_id: report.id, volunteer_id: user?.id, text });
+    setSubmitting(false);
     if (!error) {
-      setUpdateText("")
-      setShowUpdateForm(false)
-      fetchUpdates()
+      setUpdateText("");
+      setShowUpdateForm(false);
+      fetchUpdates();
     }
-  }
+  };
 
   return (
     <>
@@ -153,7 +180,6 @@ export function ReportModal({
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div className="pointer-events-auto w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-
           {/* Photo */}
           {report.photoUrl && (
             <div className="relative w-full h-56 bg-zinc-900">
@@ -173,7 +199,9 @@ export function ReportModal({
                 <Icon className={`h-5 w-5 ${hazard.tone}`} />
               </span>
               <div>
-                <h2 className="font-heading text-lg font-semibold text-zinc-50">{hazard.label}</h2>
+                <h2 className="font-heading text-lg font-semibold text-zinc-50">
+                  {hazard.label}
+                </h2>
                 <p className="text-xs text-zinc-500">{hazard.labelFil}</p>
               </div>
             </div>
@@ -187,40 +215,56 @@ export function ReportModal({
 
           {/* Badges */}
           <div className="flex flex-wrap gap-2 px-5 pt-3">
-            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider rounded-md border px-2 py-1 ${sev.ring}`}>
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider rounded-md border px-2 py-1 ${sev.ring}`}
+            >
               <span className={`h-1.5 w-1.5 rounded-full ${sev.dot}`} />
               {sev.label}
             </span>
-            <span className={`text-[10px] font-medium rounded-md border px-2 py-1 ${stat.ring}`}>
+            <span
+              className={`text-[10px] font-medium rounded-md border px-2 py-1 ${stat.ring}`}
+            >
               {stat.label}
             </span>
           </div>
 
           {/* Details */}
           <div className="px-5 pt-4 pb-5 space-y-4">
-
             {/* Location */}
             <div className="flex items-start gap-2.5">
               <MapPin className="h-4 w-4 text-zinc-500 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm text-zinc-100 font-medium">Brgy. {report.barangay}</p>
+                <p className="text-sm text-zinc-100 font-medium">
+                  Brgy. {report.barangay}
+                </p>
                 {report.landmark && (
-                  <p className="text-xs text-zinc-500 mt-0.5">{report.landmark}</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {report.landmark}
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Description */}
-            <p className="text-sm text-zinc-300 leading-relaxed">{report.description}</p>
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              {report.description}
+            </p>
 
             {/* Situational updates from Supabase */}
             {updates.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Situational updates</p>
+                <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">
+                  Situational updates
+                </p>
                 {updates.map((u) => (
-                  <div key={u.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-[11px]">
+                  <div
+                    key={u.id}
+                    className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-[11px]"
+                  >
                     <p className="text-zinc-300">{u.text}</p>
-                    <p className="text-zinc-500 mt-1">By {u.by} · {timeAgo(u.at)}</p>
+                    <p className="text-zinc-500 mt-1">
+                      By {u.by} · {timeAgo(u.at)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -254,8 +298,12 @@ export function ReportModal({
                   <User className="h-3.5 w-3.5 text-zinc-400" />
                 </span>
                 <div>
-                  <p className="text-xs text-zinc-200 font-medium">{report.reporter}</p>
-                  <span className="text-[10px] text-zinc-500">{report.reporterRole}</span>
+                  <p className="text-xs text-zinc-200 font-medium">
+                    {report.reporter}
+                  </p>
+                  <span className="text-[10px] text-zinc-500">
+                    {report.reporterRole}
+                  </span>
                 </div>
               </div>
               <div className="text-right">
@@ -299,14 +347,53 @@ export function ReportModal({
                   onClick={() => setShowUpdateForm((v) => !v)}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition"
                 >
-                  {showUpdateForm ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {showUpdateForm ? (
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  )}
                   Situational update
                 </button>
+              </div>
+            )}
+            {isLGU && (
+              <div className="flex flex-wrap gap-2 pt-1 border-t border-zinc-800">
+                {report.status === "pending" && (
+                  <button
+                    onClick={handleVerify}
+                    disabled={loading}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50 transition"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {loading ? "Verifying…" : "Verify report"}
+                  </button>
+                )}
+                {report.status === "verified" && (
+                  <button
+                    onClick={handleResolve}
+                    disabled={loading}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/20 disabled:opacity-50 transition"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {loading ? "Saving…" : "Mark resolved"}
+                  </button>
+                )}
+                {report.status !== "dismissed" &&
+                  report.status !== "resolved" && (
+                    <button
+                      onClick={handleDismiss}
+                      disabled={loading}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 disabled:opacity-50 transition"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      {loading ? "Dismissing…" : "Dismiss"}
+                    </button>
+                  )}
               </div>
             )}
           </div>
         </div>
       </div>
     </>
-  )
+  );
 }
