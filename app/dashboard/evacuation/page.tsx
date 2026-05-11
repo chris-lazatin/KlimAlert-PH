@@ -51,7 +51,7 @@ export default function EvacuationPage() {
               DRRMO.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/[0.06] px-3 py-2 text-xs text-emerald-200">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/6 px-3 py-2 text-xs text-emerald-200">
             <ShieldCheck className="h-3.5 w-3.5" />
             {filtered.length} centers · {filtered.reduce((sum, c) => sum + (c.capacity - c.occupancy), 0)} slots open
           </div>
@@ -86,13 +86,13 @@ export default function EvacuationPage() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
         {/* Map */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
-          <div className="h-[640px] p-3">
+          <div className="h-160 p-3">
             <EvacuationMap selectedId={selected} onSelect={handleSelect} height="100%" />
           </div>
         </div>
 
         {/* List */}
-        <aside className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col max-h-[640px]">
+        <aside className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col max-h-160">
           <header className="px-5 py-4 border-b border-zinc-900">
             <h2 className="font-heading text-base font-semibold text-zinc-100">Centers nearby</h2>
             <p className="text-[11px] text-zinc-500 mt-0.5">Tap to navigate · tap again to dismiss</p>
@@ -112,7 +112,7 @@ export default function EvacuationPage() {
                   <button
                     onClick={() => handleSelect(c.id)}
                     className={`w-full text-left px-5 py-4 transition-colors ${
-                      active ? "bg-emerald-500/[0.06]" : "hover:bg-zinc-900/40"
+                      active ? "bg-emerald-500/6" : "hover:bg-zinc-900/40"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
