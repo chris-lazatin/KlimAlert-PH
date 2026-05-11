@@ -450,18 +450,6 @@ export default function AlertsPage() {
                         <Share2 className="h-3 w-3" />
                         Share
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const text = `ALERT DETAILS\n\nTitle: ${a.title}\nSeverity: ${a.severity}\nSource: ${a.source}\n\n${a.description}\n\nIssued: ${a.issuedAt}\nArea: ${a.area}`
-                          navigator.clipboard.writeText(text);
-                          alert("Alert details copied to clipboard!");
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5 text-[11px] text-zinc-300 hover:border-zinc-700 hover:text-zinc-100 transition-colors"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        Details
-                      </button>
                     </div>
                   </div>
                 </div>
