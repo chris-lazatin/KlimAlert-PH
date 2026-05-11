@@ -79,6 +79,21 @@ export function HazardReportForm({
         .single();
       if (brgyError || !brgy) throw new Error("Hindi mahanap ang barangay.");
 
+      // Upload photo if attached
+      let photo_url: string | null = null;
+      if (photo) {
+        const ext = photo.file.name.split(".").pop();
+        const path = `${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("report-photos")
+          .upload(path, photo.file, { contentType: photo.file.type });
+        if (uploadError) throw new Error("Hindi na-upload ang larawan.");
+        const { data: urlData } = supabase.storage
+          .from("report-photos")
+          .getPublicUrl(path);
+        photo_url = urlData.publicUrl;
+      }
+
       const { error } = await supabase.from("reports").insert({
         hazard_type: type,
         severity,
@@ -88,6 +103,7 @@ export function HazardReportForm({
         is_anonymous: anonymous,
         reporter_id: anonymous ? null : (user?.id ?? null),
         status: "pending",
+        photo_url,
       });
       if (error) throw new Error(error.message);
 
