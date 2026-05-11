@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect } from "react";
 import {
   Radio,
   AlertTriangle,
@@ -18,24 +18,30 @@ import {
   Bell,
   BellRing,
   Share2,
-} from "lucide-react"
+} from "lucide-react";
 
-type Severity = "critical" | "warning" | "advisory" | "info"
-type AlertSource = "PAGASA" | "PHIVOLCS" | "DRRMO" | "BFP" | "LGU"
-type AlertCategory = "typhoon" | "flood" | "earthquake" | "landslide" | "fire" | "general"
+type Severity = "critical" | "warning" | "advisory" | "info";
+type AlertSource = "PAGASA" | "PHIVOLCS" | "DRRMO" | "BFP" | "LGU";
+type AlertCategory =
+  | "typhoon"
+  | "flood"
+  | "earthquake"
+  | "landslide"
+  | "fire"
+  | "general";
 
 type LiveAlert = {
-  id: string
-  severity: Severity
-  category: AlertCategory
-  title: string
-  description: string
-  area: string
-  source: AlertSource
-  issuedAt: string // ISO
-  validUntil?: string
-  actions?: string[]
-}
+  id: string;
+  severity: Severity;
+  category: AlertCategory;
+  title: string;
+  description: string;
+  area: string;
+  source: AlertSource;
+  issuedAt: string; // ISO
+  validUntil?: string;
+  actions?: string[];
+};
 
 const SEV_META: Record<
   Severity,
@@ -69,16 +75,19 @@ const SEV_META: Record<
     ring: "ring-zinc-700",
     bg: "from-zinc-900 to-transparent",
   },
-}
+};
 
-const CATEGORY_META: Record<AlertCategory, { label: string; icon: typeof CloudRain; tone: string }> = {
+const CATEGORY_META: Record<
+  AlertCategory,
+  { label: string; icon: typeof CloudRain; tone: string }
+> = {
   typhoon: { label: "Typhoon", icon: Wind, tone: "text-sky-300" },
   flood: { label: "Flood", icon: Waves, tone: "text-blue-300" },
   earthquake: { label: "Earthquake", icon: Mountain, tone: "text-amber-300" },
   landslide: { label: "Landslide", icon: Mountain, tone: "text-orange-300" },
   fire: { label: "Fire", icon: Flame, tone: "text-rose-300" },
   general: { label: "General", icon: Megaphone, tone: "text-zinc-300" },
-}
+};
 
 const ALERTS: LiveAlert[] = [
   {
@@ -109,7 +118,10 @@ const ALERTS: LiveAlert[] = [
     source: "DRRMO",
     issuedAt: new Date(Date.now() - 32 * 60_000).toISOString(),
     validUntil: new Date(Date.now() + 6 * 60 * 60_000).toISOString(),
-    actions: ["Iwasan ang creek crossings", "Lumipat sa mas mataas na lugar kung kinakailangan"],
+    actions: [
+      "Iwasan ang creek crossings",
+      "Lumipat sa mas mataas na lugar kung kinakailangan",
+    ],
   },
   {
     id: "a-003",
@@ -132,7 +144,10 @@ const ALERTS: LiveAlert[] = [
     area: "Castillejos, Zambales · 42 km NNW",
     source: "PHIVOLCS",
     issuedAt: new Date(Date.now() - 3 * 60 * 60_000).toISOString(),
-    actions: ["Drop, cover, hold during aftershocks", "Iwasan ang mga sirang gusali"],
+    actions: [
+      "Drop, cover, hold during aftershocks",
+      "Iwasan ang mga sirang gusali",
+    ],
   },
   {
     id: "a-005",
@@ -156,7 +171,7 @@ const ALERTS: LiveAlert[] = [
     source: "LGU",
     issuedAt: new Date(Date.now() - 9 * 60 * 60_000).toISOString(),
   },
-]
+];
 
 const SOURCE_FILTERS: { id: AlertSource | "all"; label: string }[] = [
   { id: "all", label: "All sources" },
@@ -165,7 +180,7 @@ const SOURCE_FILTERS: { id: AlertSource | "all"; label: string }[] = [
   { id: "DRRMO", label: "DRRMO" },
   { id: "BFP", label: "BFP" },
   { id: "LGU", label: "LGU" },
-]
+];
 
 const SEV_FILTERS: { id: Severity | "all"; label: string }[] = [
   { id: "all", label: "All" },
@@ -173,49 +188,51 @@ const SEV_FILTERS: { id: Severity | "all"; label: string }[] = [
   { id: "warning", label: "Warning" },
   { id: "advisory", label: "Advisory" },
   { id: "info", label: "Info" },
-]
+];
 
 function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60_000)
-  if (m < 1) return "just now"
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
 function timeUntil(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now()
-  if (diff <= 0) return "expired"
-  const m = Math.floor(diff / 60_000)
-  if (m < 60) return `${m}m left`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h left`
-  return `${Math.floor(h / 24)}d left`
+  const diff = new Date(iso).getTime() - Date.now();
+  if (diff <= 0) return "expired";
+  const m = Math.floor(diff / 60_000);
+  if (m < 60) return `${m}m left`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h left`;
+  return `${Math.floor(h / 24)}d left`;
 }
 
 export default function AlertsPage() {
-  const [sevFilter, setSevFilter] = useState<Severity | "all">("all")
-  const [sourceFilter, setSourceFilter] = useState<AlertSource | "all">("all")
-  const [pushOn, setPushOn] = useState(true)
+  const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
+  const [sourceFilter, setSourceFilter] = useState<AlertSource | "all">("all");
+  const [pushOn, setPushOn] = useState(true);
 
   const filtered = useMemo(() => {
     return ALERTS.filter((a) => {
-      const matchSev = sevFilter === "all" || a.severity === sevFilter
-      const matchSrc = sourceFilter === "all" || a.source === sourceFilter
-      return matchSev && matchSrc
-    })
-  }, [sevFilter, sourceFilter])
+      const matchSev = sevFilter === "all" || a.severity === sevFilter;
+      const matchSrc = sourceFilter === "all" || a.source === sourceFilter;
+      return matchSev && matchSrc;
+    });
+  }, [sevFilter, sourceFilter]);
 
   useEffect(() => {
-  const hash = window.location.hash.replace("#", "")
-  if (hash) {
-    setTimeout(() => {
-      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "center" })
-    }, 300)
-  }
-}, [])
+    const hash = window.location.hash.replace("#", "");
+    if (hash) {
+      setTimeout(() => {
+        document
+          .getElementById(hash)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    }
+  }, []);
 
   const counts = useMemo(
     () => ({
@@ -226,21 +243,23 @@ export default function AlertsPage() {
       total: ALERTS.length,
     }),
     [],
-  )
+  );
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">Live alerts</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">
+          Live alerts
+        </p>
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h1 className="font-heading text-2xl lg:text-3xl font-semibold tracking-tight text-zinc-50">
               Real-time public safety alerts
             </h1>
             <p className="text-sm text-zinc-400 mt-1 max-w-2xl">
-              Direkta mula sa PAGASA, PHIVOLCS, BFP, at LGU Olongapo DRRMO. May verified community input para sa
-              ground truth.
+              Direkta mula sa PAGASA, PHIVOLCS, BFP, at LGU Olongapo DRRMO. May
+              verified community input para sa ground truth.
             </p>
           </div>
           <button
@@ -251,7 +270,11 @@ export default function AlertsPage() {
                 : "border-zinc-800 bg-zinc-900/60 text-zinc-300 hover:border-zinc-700"
             }`}
           >
-            {pushOn ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+            {pushOn ? (
+              <BellRing className="h-4 w-4" />
+            ) : (
+              <Bell className="h-4 w-4" />
+            )}
             Push notifications {pushOn ? "on" : "off"}
           </button>
         </div>
@@ -267,7 +290,9 @@ export default function AlertsPage() {
             </span>
             LIVE FEED
           </span>
-          <span className="text-xs text-zinc-500">Last sync · 38 seconds ago</span>
+          <span className="text-xs text-zinc-500">
+            Last sync · 38 seconds ago
+          </span>
           <div className="ml-auto flex items-center gap-2 text-[11px]">
             <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-rose-300">
               <span className="h-1 w-1 rounded-full bg-rose-400" />
@@ -282,11 +307,11 @@ export default function AlertsPage() {
               {counts.advisory} advisory
             </span>
             {counts.info > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-700/30 bg-zinc-800/16 px-2 py-0.5 text-[11px]">
-            <span className="h-1 w-1 rounded-full bg-zinc-400" />
-            {counts.info} info
-          </span>
-        )}
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-700/30 bg-zinc-800/16 px-2 py-0.5 text-[11px]">
+                <span className="h-1 w-1 rounded-full bg-zinc-400" />
+                {counts.info} info
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -300,7 +325,9 @@ export default function AlertsPage() {
               key={f.id}
               onClick={() => setSevFilter(f.id)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
-                sevFilter === f.id ? "bg-zinc-800 text-zinc-100" : "text-zinc-400 hover:text-zinc-200"
+                sevFilter === f.id
+                  ? "bg-zinc-800 text-zinc-100"
+                  : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               {f.label}
@@ -314,7 +341,9 @@ export default function AlertsPage() {
               key={f.id}
               onClick={() => setSourceFilter(f.id)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors whitespace-nowrap ${
-                sourceFilter === f.id ? "bg-zinc-800 text-zinc-100" : "text-zinc-400 hover:text-zinc-200"
+                sourceFilter === f.id
+                  ? "bg-zinc-800 text-zinc-100"
+                  : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               {f.label}
@@ -328,13 +357,15 @@ export default function AlertsPage() {
         {filtered.length === 0 ? (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-12 text-center">
             <ShieldCheck className="h-8 w-8 mx-auto text-zinc-600" />
-            <p className="mt-3 text-sm text-zinc-400">Walang alerts sa filter na ito ngayon.</p>
+            <p className="mt-3 text-sm text-zinc-400">
+              Walang alerts sa filter na ito ngayon.
+            </p>
           </div>
         ) : (
           filtered.map((a) => {
-            const sev = SEV_META[a.severity]
-            const cat = CATEGORY_META[a.category]
-            const Icon = cat.icon
+            const sev = SEV_META[a.severity];
+            const cat = CATEGORY_META[a.category];
+            const Icon = cat.icon;
             return (
               <article
                 key={a.id}
@@ -367,7 +398,9 @@ export default function AlertsPage() {
                       <h2 className="font-heading text-base font-semibold text-zinc-100 mt-2 text-balance">
                         {a.title}
                       </h2>
-                      <p className="text-sm text-zinc-300 mt-1.5 leading-relaxed">{a.description}</p>
+                      <p className="text-sm text-zinc-300 mt-1.5 leading-relaxed">
+                        {a.description}
+                      </p>
 
                       {a.actions && a.actions.length > 0 && (
                         <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
@@ -404,6 +437,14 @@ export default function AlertsPage() {
                     <div className="hidden sm:flex flex-col gap-1.5 shrink-0">
                       <button
                         type="button"
+                        onClick={() => {
+                          const text = `${a.title}\n${a.body}\nSource: ${a.source}`;
+                          if (navigator.share) {
+                            navigator.share({ title: a.title, text });
+                          } else {
+                            navigator.clipboard.writeText(text);
+                          }
+                        }}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5 text-[11px] text-zinc-300 hover:border-zinc-700 hover:text-zinc-100 transition-colors"
                       >
                         <Share2 className="h-3 w-3" />
@@ -411,6 +452,11 @@ export default function AlertsPage() {
                       </button>
                       <button
                         type="button"
+                        onClick={() => {
+                          const text = `ALERT DETAILS\n\nTitle: ${a.title}\nSeverity: ${a.severity}\nSource: ${a.source}\n\n${a.body}\n\nIssued: ${a.issuedAt}\nArea: ${a.area}`;
+                          navigator.clipboard.writeText(text);
+                          alert("Alert details copied to clipboard!");
+                        }}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5 text-[11px] text-zinc-300 hover:border-zinc-700 hover:text-zinc-100 transition-colors"
                       >
                         <ExternalLink className="h-3 w-3" />
@@ -420,10 +466,10 @@ export default function AlertsPage() {
                   </div>
                 </div>
               </article>
-            )
+            );
           })
         )}
       </div>
     </div>
-  )
+  );
 }
