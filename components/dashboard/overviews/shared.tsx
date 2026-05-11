@@ -11,7 +11,9 @@ import {
   Activity,
   AlertTriangle,
   ArrowUpRight,
+  Check,
   Cloud,
+  Copy,
   Droplets,
   Megaphone,
   Phone,
@@ -415,6 +417,14 @@ const CONTACTS = [
 ] as const
 
 export function EmergencyContactsCard() {
+  const [copied, setCopied] = useState<string | null>(null)
+
+  const handleCopy = (number: string) => {
+    navigator.clipboard.writeText(number)
+    setCopied(number)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
       <header className="px-5 py-4 border-b border-zinc-900">
@@ -442,6 +452,17 @@ export function EmergencyContactsCard() {
               >
                 {c.number}
               </a>
+               <button
+          onClick={() => handleCopy(c.number)}
+          className="ml-1 h-7 w-7 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition"
+          title="Copy number"
+        >
+          {copied === c.number ? (
+            <Check className="h-3.5 w-3.5 text-emerald-400" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
+        </button>
             </li>
           )
         })}
