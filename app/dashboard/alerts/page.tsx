@@ -438,7 +438,7 @@ export default function AlertsPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const text = `${a.title}\n${a.body}\nSource: ${a.source}`;
+                          const text = `${a.title}\n${a.description}\nSource: ${a.source}`
                           if (navigator.share) {
                             navigator.share({ title: a.title, text });
                           } else {
@@ -453,7 +453,7 @@ export default function AlertsPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const text = `ALERT DETAILS\n\nTitle: ${a.title}\nSeverity: ${a.severity}\nSource: ${a.source}\n\n${a.body}\n\nIssued: ${a.issuedAt}\nArea: ${a.area}`;
+                          const text = `ALERT DETAILS\n\nTitle: ${a.title}\nSeverity: ${a.severity}\nSource: ${a.source}\n\n${a.description}\n\nIssued: ${a.issuedAt}\nArea: ${a.area}`
                           navigator.clipboard.writeText(text);
                           alert("Alert details copied to clipboard!");
                         }}
