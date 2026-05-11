@@ -1,13 +1,21 @@
-"use client"
+"use client";
 
-import dynamic from "next/dynamic"
-import { useMemo, useState } from "react"
-import { MapPin, Phone, Users, ShieldCheck, Search } from "lucide-react"
-import { getAvailableCenters, STATUS_META, type EvacuationCenter } from "@/lib/evacuation-centers"
-import { OLONGAPO_BARANGAYS } from "@/lib/olongapo"
+import dynamic from "next/dynamic";
+import { useMemo, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { MapPin, Phone, Users, ShieldCheck, Search } from "lucide-react";
+import {
+  getAvailableCenters,
+  STATUS_META,
+  type EvacuationCenter,
+} from "@/lib/evacuation-centers";
+import { OLONGAPO_BARANGAYS } from "@/lib/olongapo";
 
 const EvacuationMap = dynamic(
-  () => import("@/components/dashboard/evacuation-map").then((m) => m.EvacuationMap),
+  () =>
+    import("@/components/dashboard/evacuation-map").then(
+      (m) => m.EvacuationMap,
+    ),
   {
     ssr: false,
     loading: () => (
@@ -16,44 +24,54 @@ const EvacuationMap = dynamic(
       </div>
     ),
   },
-)
+);
 
 export default function EvacuationPage() {
-  const all = useMemo(() => getAvailableCenters(), [])
-  const [query, setQuery] = useState("")
-  const [barangay, setBarangay] = useState<string>("")
-  const [selected, setSelected] = useState<string | null>(null)
+  const all = centers;
+  const [query, setQuery] = useState("");
+  const [barangay, setBarangay] = useState<string>("");
+  const [selected, setSelected] = useState<string | null>(null);
+  const { user } = useAuth();
+  const isLGU = user?.role === "lgu" || user?.role === "admin";
+  const [centers, setCenters] = useState(() => getAvailableCenters());
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editVals, setEditVals] = useState({ occupancy: 0, capacity: 0 });
 
-  const handleSelect = (id: string) => setSelected((prev) => (prev === id ? null : id))
+  const handleSelect = (id: string) =>
+    setSelected((prev) => (prev === id ? null : id));
 
   const filtered = useMemo<EvacuationCenter[]>(() => {
     return all.filter((c) => {
       const matchQ =
         !query ||
         c.name.toLowerCase().includes(query.toLowerCase()) ||
-        c.barangay.toLowerCase().includes(query.toLowerCase())
-      const matchB = !barangay || c.barangay === barangay
-      return matchQ && matchB
-    })
-  }, [all, query, barangay])
+        c.barangay.toLowerCase().includes(query.toLowerCase());
+      const matchB = !barangay || c.barangay === barangay;
+      return matchQ && matchB;
+    });
+  }, [all, query, barangay]);
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">Evacuation locator</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">
+          Evacuation locator
+        </p>
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h1 className="font-heading text-2xl lg:text-3xl font-semibold tracking-tight text-zinc-50">
               Available evacuation centers
             </h1>
             <p className="text-sm text-zinc-400 mt-1 max-w-2xl">
-              Hindi ipinapakita ang mga FULL o CLOSED na centers. Ang capacity data ay live mula sa LGU Olongapo
-              DRRMO.
+              Hindi ipinapakita ang mga FULL o CLOSED na centers. Ang capacity
+              data ay live mula sa LGU Olongapo DRRMO.
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/6 px-3 py-2 text-xs text-emerald-200">
             <ShieldCheck className="h-3.5 w-3.5" />
-            {filtered.length} centers · {filtered.reduce((sum, c) => sum + (c.capacity - c.occupancy), 0)} slots open
+            {filtered.length} centers ·{" "}
+            {filtered.reduce((sum, c) => sum + (c.capacity - c.occupancy), 0)}{" "}
+            slots open
           </div>
         </div>
       </div>
@@ -87,15 +105,23 @@ export default function EvacuationPage() {
         {/* Map */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
           <div className="h-160 p-3">
-            <EvacuationMap selectedId={selected} onSelect={handleSelect} height="100%" />
+            <EvacuationMap
+              selectedId={selected}
+              onSelect={handleSelect}
+              height="100%"
+            />
           </div>
         </div>
 
         {/* List */}
         <aside className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col max-h-160">
           <header className="px-5 py-4 border-b border-zinc-900">
-            <h2 className="font-heading text-base font-semibold text-zinc-100">Centers nearby</h2>
-            <p className="text-[11px] text-zinc-500 mt-0.5">Tap to navigate · tap again to dismiss</p>
+            <h2 className="font-heading text-base font-semibold text-zinc-100">
+              Centers nearby
+            </h2>
+            <p className="text-[11px] text-zinc-500 mt-0.5">
+              Tap to navigate · tap again to dismiss
+            </p>
           </header>
           <ul className="flex-1 overflow-y-auto divide-y divide-zinc-900">
             {filtered.length === 0 && (
@@ -104,9 +130,9 @@ export default function EvacuationPage() {
               </li>
             )}
             {filtered.map((c) => {
-              const meta = STATUS_META[c.status]
-              const pct = Math.round((c.occupancy / c.capacity) * 100)
-              const active = c.id === selected
+              const meta = STATUS_META[c.status];
+              const pct = Math.round((c.occupancy / c.capacity) * 100);
+              const active = c.id === selected;
               return (
                 <li key={c.id}>
                   <button
@@ -117,7 +143,9 @@ export default function EvacuationPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-medium text-sm text-zinc-100">{c.name}</p>
+                        <p className="font-medium text-sm text-zinc-100">
+                          {c.name}
+                        </p>
                         <p className="text-[11px] text-zinc-500 mt-0.5 inline-flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
                           Brgy. {c.barangay}
@@ -141,8 +169,26 @@ export default function EvacuationPage() {
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-zinc-500 tabular-nums">{pct}%</span>
+                      <span className="text-[11px] text-zinc-500 tabular-nums">
+                        {pct}%
+                      </span>
                     </div>
+
+                    {isLGU && editing !== c.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditing(c.id);
+                          setEditVals({
+                            occupancy: c.occupancy,
+                            capacity: c.capacity,
+                          });
+                        }}
+                        className="ml-2 text-[10px] text-emerald-400 hover:text-emerald-300 underline"
+                      >
+                        Edit
+                      </button>
+                    )}
 
                     <div className="mt-2 flex flex-wrap gap-1">
                       {c.facilities.map((f) => (
@@ -155,6 +201,73 @@ export default function EvacuationPage() {
                       ))}
                     </div>
 
+                    {isLGU && editing === c.id && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-3 rounded-xl border border-zinc-700 bg-zinc-900 p-3 space-y-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <label className="text-[11px] text-zinc-400 w-20">
+                            Occupancy
+                          </label>
+                          <input
+                            type="number"
+                            value={editVals.occupancy}
+                            onChange={(e) =>
+                              setEditVals((v) => ({
+                                ...v,
+                                occupancy: +e.target.value,
+                              }))
+                            }
+                            className="flex-1 h-7 px-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs text-zinc-100 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[11px] text-zinc-400 w-20">
+                            Capacity
+                          </label>
+                          <input
+                            type="number"
+                            value={editVals.capacity}
+                            onChange={(e) =>
+                              setEditVals((v) => ({
+                                ...v,
+                                capacity: +e.target.value,
+                              }))
+                            }
+                            className="flex-1 h-7 px-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs text-zinc-100 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            onClick={() => {
+                              setCenters((prev) =>
+                                prev.map((x) =>
+                                  x.id === c.id
+                                    ? {
+                                        ...x,
+                                        occupancy: editVals.occupancy,
+                                        capacity: editVals.capacity,
+                                      }
+                                    : x,
+                                ),
+                              );
+                              setEditing(null);
+                            }}
+                            className="flex-1 h-7 rounded-lg bg-emerald-500 text-[11px] font-semibold text-zinc-950 hover:bg-emerald-400"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditing(null)}
+                            className="flex-1 h-7 rounded-lg bg-zinc-800 text-[11px] text-zinc-300 hover:bg-zinc-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <a
                       href={`tel:${c.contact.replace(/\D/g, "")}`}
                       onClick={(e) => e.stopPropagation()}
@@ -165,11 +278,11 @@ export default function EvacuationPage() {
                     </a>
                   </button>
                 </li>
-              )
+              );
             })}
           </ul>
         </aside>
       </div>
     </div>
-  )
+  );
 }
