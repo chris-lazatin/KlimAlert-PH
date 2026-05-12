@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react";
 import {
   ShieldCheck,
   ShieldX,
@@ -14,7 +14,8 @@ import {
   Activity,
   Building2,
   Send,
-} from "lucide-react"
+  X,
+} from "lucide-react";
 import {
   SAMPLE_REPORTS,
   HAZARD_META,
@@ -22,17 +23,17 @@ import {
   STATUS_META,
   type HazardReport,
   type ReportStatus,
-} from "@/lib/hazard-reports"
-import { useAuth } from "@/lib/auth-context"
+} from "@/lib/hazard-reports";
+import { useAuth } from "@/lib/auth-context";
 
 function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60_000)
-  if (m < 1) return "just now"
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
 const FILTERS: { id: ReportStatus | "all"; label: string }[] = [
@@ -41,24 +42,32 @@ const FILTERS: { id: ReportStatus | "all"; label: string }[] = [
   { id: "resolved", label: "Resolved" },
   { id: "dismissed", label: "Dismissed" },
   { id: "all", label: "All" },
-]
+];
 
 export default function VerifyPage() {
-  const { user, isDemo } = useAuth()
-  const [items, setItems] = useState<HazardReport[]>(SAMPLE_REPORTS)
-  const [filter, setFilter] = useState<ReportStatus | "all">("pending")
-  const [selectedId, setSelectedId] = useState<string | null>(SAMPLE_REPORTS[0]?.id ?? null)
-  const [note, setNote] = useState("")
-  const [busy, setBusy] = useState<string | null>(null)
+  const { user } = useAuth()
+  const [items, setItems] = useState<HazardReport[]>(SAMPLE_REPORTS);
+  const [filter, setFilter] = useState<ReportStatus | "all">("pending");
+  const [selectedId, setSelectedId] = useState<string | null>(
+    SAMPLE_REPORTS[0]?.id ?? null,
+  );
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [broadcastTarget, setBroadcastTarget] = useState<HazardReport | null>(
+    null,
+  );
 
-  const canVerify = isDemo || user?.role === "lgu" || user?.role === "admin"
+  const canVerify = user?.role === "lgu" || user?.role === "admin"
 
   const filtered = useMemo(
     () => (filter === "all" ? items : items.filter((r) => r.status === filter)),
     [items, filter],
-  )
+  );
 
-  const selected = useMemo(() => items.find((r) => r.id === selectedId) ?? null, [items, selectedId])
+  const selected = useMemo(
+    () => items.find((r) => r.id === selectedId) ?? null,
+    [items, selectedId],
+  );
 
   const counts = useMemo(
     () => ({
@@ -68,10 +77,10 @@ export default function VerifyPage() {
       dismissed: items.filter((r) => r.status === "dismissed").length,
     }),
     [items],
-  )
+  );
 
   function applyAction(id: string, action: "verify" | "resolve" | "dismiss") {
-    setBusy(id + ":" + action)
+    setBusy(id + ":" + action);
     // Local mock — production would POST /reports/verify.php via apiVerifyReport
     setTimeout(() => {
       setItems((prev) =>
@@ -80,15 +89,19 @@ export default function VerifyPage() {
             ? {
                 ...r,
                 status:
-                  action === "verify" ? "verified" : action === "resolve" ? "resolved" : "dismissed",
+                  action === "verify"
+                    ? "verified"
+                    : action === "resolve"
+                      ? "resolved"
+                      : "dismissed",
                 verifiedBy: user?.name ?? "LGU Officer",
               }
             : r,
         ),
-      )
-      setNote("")
-      setBusy(null)
-    }, 350)
+      );
+      setNote("");
+      setBusy(null);
+    }, 350);
   }
 
   if (!canVerify) {
@@ -99,26 +112,29 @@ export default function VerifyPage() {
           LGU access required
         </h1>
         <p className="text-sm text-zinc-400 mt-2 max-w-md mx-auto">
-          Ang verification queue ay para lamang sa LGU officers, DRRMO staff, at admin. Mag-sign in sa
-          tamang account para ma-access ang tools na ito.
+          Ang verification queue ay para lamang sa LGU officers, DRRMO staff, at
+          admin. Mag-sign in sa tamang account para ma-access ang tools na ito.
         </p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">LGU operations</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400 font-medium">
+          LGU operations
+        </p>
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h1 className="font-heading text-2xl lg:text-3xl font-semibold tracking-tight text-zinc-50">
               Verification & broadcast tools
             </h1>
             <p className="text-sm text-zinc-400 mt-1 max-w-2xl">
-              I-review at i-verify ang mga community reports bago i-broadcast sa public feed. Ang verified
-              reports ay agad na sinasama sa Live Alerts.
+              I-review at i-verify ang mga community reports bago i-broadcast sa
+              public feed. Ang verified reports ay agad na sinasama sa Live
+              Alerts.
             </p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-3 py-2 text-xs text-emerald-200">
@@ -137,9 +153,27 @@ export default function VerifyPage() {
           tone="amber"
           hint="Needs attention"
         />
-        <StatCard label="Verified today" value={counts.verified} icon={ShieldCheck} tone="emerald" hint="Live to public" />
-        <StatCard label="Resolved" value={counts.resolved} icon={CheckCircle2} tone="zinc" hint="Closed cases" />
-        <StatCard label="Dismissed" value={counts.dismissed} icon={ShieldX} tone="zinc" hint="False / duplicate" />
+        <StatCard
+          label="Verified today"
+          value={counts.verified}
+          icon={ShieldCheck}
+          tone="emerald"
+          hint="Live to public"
+        />
+        <StatCard
+          label="Resolved"
+          value={counts.resolved}
+          icon={CheckCircle2}
+          tone="zinc"
+          hint="Closed cases"
+        />
+        <StatCard
+          label="Dismissed"
+          value={counts.dismissed}
+          icon={ShieldX}
+          tone="zinc"
+          hint="False / duplicate"
+        />
       </div>
 
       {/* Quick actions */}
@@ -170,7 +204,9 @@ export default function VerifyPage() {
           <header className="flex items-center justify-between gap-3 px-5 py-4 border-b border-zinc-900">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-zinc-500" />
-              <h2 className="font-heading text-base font-semibold text-zinc-100">Verification queue</h2>
+              <h2 className="font-heading text-base font-semibold text-zinc-100">
+                Verification queue
+              </h2>
             </div>
             <div className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/40 p-0.5 overflow-x-auto">
               {FILTERS.map((f) => (
@@ -178,7 +214,9 @@ export default function VerifyPage() {
                   key={f.id}
                   onClick={() => setFilter(f.id)}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors ${
-                    filter === f.id ? "bg-zinc-800 text-zinc-100" : "text-zinc-400 hover:text-zinc-200"
+                    filter === f.id
+                      ? "bg-zinc-800 text-zinc-100"
+                      : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
                   {f.label}
@@ -194,18 +232,20 @@ export default function VerifyPage() {
               </li>
             ) : (
               filtered.map((r) => {
-                const hazard = HAZARD_META[r.type]
-                const sev = SEVERITY_META[r.severity]
-                const stat = STATUS_META[r.status]
-                const Icon = hazard.icon
-                const active = selectedId === r.id
+                const hazard = HAZARD_META[r.type];
+                const sev = SEVERITY_META[r.severity];
+                const stat = STATUS_META[r.status];
+                const Icon = hazard.icon;
+                const active = selectedId === r.id;
                 return (
                   <li key={r.id}>
                     <button
                       type="button"
                       onClick={() => setSelectedId(r.id)}
                       className={`w-full text-left px-5 py-4 transition-colors ${
-                        active ? "bg-emerald-500/[0.06]" : "hover:bg-zinc-900/40"
+                        active
+                          ? "bg-emerald-500/[0.06]"
+                          : "hover:bg-zinc-900/40"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -214,11 +254,15 @@ export default function VerifyPage() {
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium text-sm text-zinc-100">{hazard.label}</p>
+                            <p className="font-medium text-sm text-zinc-100">
+                              {hazard.label}
+                            </p>
                             <span
                               className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider rounded-md border px-1.5 py-0.5 ${sev.ring}`}
                             >
-                              <span className={`h-1 w-1 rounded-full ${sev.dot}`} />
+                              <span
+                                className={`h-1 w-1 rounded-full ${sev.dot}`}
+                              />
                               {sev.label}
                             </span>
                             <span
@@ -230,7 +274,11 @@ export default function VerifyPage() {
                           <p className="text-[11px] text-zinc-500 mt-1 inline-flex items-center gap-1.5">
                             <MapPin className="h-3 w-3" />
                             Brgy. {r.barangay}
-                            {r.landmark && <span className="text-zinc-600">· {r.landmark}</span>}
+                            {r.landmark && (
+                              <span className="text-zinc-600">
+                                · {r.landmark}
+                              </span>
+                            )}
                           </p>
                           <p className="text-sm text-zinc-300 mt-1.5 leading-relaxed line-clamp-2">
                             {r.description}
@@ -249,7 +297,7 @@ export default function VerifyPage() {
                       </div>
                     </button>
                   </li>
-                )
+                );
               })
             )}
           </ul>
@@ -260,7 +308,9 @@ export default function VerifyPage() {
           {selected ? (
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
               <header className="px-5 py-4 border-b border-zinc-900 flex items-center justify-between">
-                <h3 className="font-heading text-base font-semibold text-zinc-100">Review report</h3>
+                <h3 className="font-heading text-base font-semibold text-zinc-100">
+                  Review report
+                </h3>
                 <span
                   className={`text-[10px] font-medium rounded-md border px-1.5 py-0.5 ${
                     STATUS_META[selected.status].ring
@@ -274,7 +324,9 @@ export default function VerifyPage() {
                 {/* Summary */}
                 <div className="flex items-start gap-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900">
-                    <AlertTriangle className={`h-4 w-4 ${HAZARD_META[selected.type].tone}`} />
+                    <AlertTriangle
+                      className={`h-4 w-4 ${HAZARD_META[selected.type].tone}`}
+                    />
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-zinc-100">
@@ -283,18 +335,36 @@ export default function VerifyPage() {
                     <p className="text-[11px] text-zinc-500 inline-flex items-center gap-1.5 mt-0.5">
                       <MapPin className="h-3 w-3" />
                       Brgy. {selected.barangay}
-                      {selected.landmark && <span className="text-zinc-600">· {selected.landmark}</span>}
+                      {selected.landmark && (
+                        <span className="text-zinc-600">
+                          · {selected.landmark}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-sm text-zinc-300 leading-relaxed">{selected.description}</p>
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  {selected.description}
+                </p>
 
                 <dl className="grid grid-cols-2 gap-2 text-xs">
-                  <Field label="Reporter" value={`${selected.reporter} (${selected.reporterRole})`} />
-                  <Field label="Severity" value={SEVERITY_META[selected.severity].label} />
-                  <Field label="Submitted" value={timeAgo(selected.createdAt)} />
-                  <Field label="Verified by" value={selected.verifiedBy ?? "—"} />
+                  <Field
+                    label="Reporter"
+                    value={`${selected.reporter} (${selected.reporterRole})`}
+                  />
+                  <Field
+                    label="Severity"
+                    value={SEVERITY_META[selected.severity].label}
+                  />
+                  <Field
+                    label="Submitted"
+                    value={timeAgo(selected.createdAt)}
+                  />
+                  <Field
+                    label="Verified by"
+                    value={selected.verifiedBy ?? "—"}
+                  />
                 </dl>
 
                 {/* Notes */}
@@ -348,6 +418,7 @@ export default function VerifyPage() {
 
                 <button
                   type="button"
+                  onClick={() => setBroadcastTarget(selected)}
                   className="w-full inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-emerald-500/30 bg-emerald-500/[0.06] text-emerald-200 text-xs font-medium hover:bg-emerald-500/[0.1] transition"
                 >
                   <Send className="h-3.5 w-3.5" />
@@ -358,13 +429,152 @@ export default function VerifyPage() {
           ) : (
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-10 text-center">
               <Activity className="h-8 w-8 mx-auto text-zinc-600" />
-              <p className="mt-3 text-sm text-zinc-400">Pumili ng report mula sa queue.</p>
+              <p className="mt-3 text-sm text-zinc-400">
+                Pumili ng report mula sa queue.
+              </p>
             </div>
           )}
         </aside>
       </div>
+      <BroadcastModal
+        report={broadcastTarget}
+        onClose={() => setBroadcastTarget(null)}
+      />
     </div>
-  )
+  );
+}
+
+function BroadcastModal({
+  report,
+  onClose,
+}: {
+  report: HazardReport | null;
+  onClose: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [severity, setSeverity] = useState("warning");
+  const [area, setArea] = useState("");
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    if (report) {
+      setTitle(HAZARD_META[report.type].label + " — Brgy. " + report.barangay);
+      setDescription(report.description);
+      setArea(
+        "Brgy. " +
+          report.barangay +
+          (report.landmark ? " · " + report.landmark : ""),
+      );
+      setSeverity(
+        report.severity === "critical"
+          ? "critical"
+          : report.severity === "high"
+            ? "warning"
+            : "advisory",
+      );
+      setSent(false);
+    }
+  }, [report]);
+
+  if (!report) return null;
+
+  if (sent)
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-sm w-full text-center space-y-4">
+          <div className="flex h-14 w-14 mx-auto items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/30">
+            <Send className="h-6 w-6 text-emerald-400" />
+          </div>
+          <h2 className="font-heading text-lg font-semibold text-zinc-50">
+            Alert broadcasted!
+          </h2>
+          <p className="text-sm text-zinc-400">
+            The live alert has been posted to the public feed and all users have
+            been notified.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full h-10 rounded-lg bg-emerald-500 text-zinc-950 text-sm font-semibold hover:bg-emerald-400 transition"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg overflow-hidden">
+        <header className="flex items-center justify-between px-5 py-4 border-b border-zinc-900">
+          <h2 className="font-heading text-base font-semibold text-zinc-100">
+            Broadcast Live Alert
+          </h2>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 flex items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 hover:text-zinc-100 transition"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+        <div className="px-5 py-4 space-y-4">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+              Severity
+            </label>
+            <select
+              value={severity}
+              onChange={(e) => setSeverity(e.target.value)}
+              className="mt-1.5 w-full h-10 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 focus:border-emerald-500/40 focus:outline-none"
+            >
+              <option value="critical">🔴 Critical</option>
+              <option value="warning">🟠 Warning</option>
+              <option value="advisory">🟡 Advisory</option>
+              <option value="info">🔵 Info</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+              Alert title
+            </label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="mt-1.5 w-full h-10 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 focus:border-emerald-500/40 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1.5 w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 focus:border-emerald-500/40 focus:outline-none resize-none"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+              Affected area
+            </label>
+            <input
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              className="mt-1.5 w-full h-10 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 focus:border-emerald-500/40 focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={() => setSent(true)}
+            className="w-full h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-zinc-950 text-sm font-semibold hover:brightness-110 transition inline-flex items-center justify-center gap-2"
+          >
+            <Send className="h-4 w-4" />
+            Broadcast to public feed
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function StatCard({
@@ -374,22 +584,24 @@ function StatCard({
   tone,
   hint,
 }: {
-  label: string
-  value: number
-  icon: typeof Clock
-  tone: "amber" | "emerald" | "zinc"
-  hint: string
+  label: string;
+  value: number;
+  icon: typeof Clock;
+  tone: "amber" | "emerald" | "zinc";
+  hint: string;
 }) {
   const toneCls =
     tone === "amber"
       ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
       : tone === "emerald"
         ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
-        : "bg-zinc-900 text-zinc-400 border-zinc-800"
+        : "bg-zinc-900 text-zinc-400 border-zinc-800";
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 hover:border-zinc-700 transition-colors">
       <div className="flex items-start justify-between">
-        <span className={`flex h-9 w-9 items-center justify-center rounded-lg border ${toneCls}`}>
+        <span
+          className={`flex h-9 w-9 items-center justify-center rounded-lg border ${toneCls}`}
+        >
           <Icon className="h-4 w-4" />
         </span>
         <span className="text-[11px] text-zinc-500">{hint}</span>
@@ -399,7 +611,7 @@ function StatCard({
       </p>
       <p className="text-xs text-zinc-500 mt-0.5">{label}</p>
     </div>
-  )
+  );
 }
 
 function ActionCard({
@@ -408,10 +620,10 @@ function ActionCard({
   desc,
   tone,
 }: {
-  icon: typeof Megaphone
-  title: string
-  desc: string
-  tone: "emerald" | "zinc"
+  icon: typeof Megaphone;
+  title: string;
+  desc: string;
+  tone: "emerald" | "zinc";
 }) {
   return (
     <button
@@ -431,17 +643,21 @@ function ActionCard({
       >
         <Icon className="h-4 w-4" />
       </span>
-      <p className="mt-3 font-heading text-sm font-semibold text-zinc-100">{title}</p>
+      <p className="mt-3 font-heading text-sm font-semibold text-zinc-100">
+        {title}
+      </p>
       <p className="text-xs text-zinc-400 mt-1 leading-relaxed">{desc}</p>
     </button>
-  )
+  );
 }
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2">
-      <dt className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">{label}</dt>
+      <dt className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+        {label}
+      </dt>
       <dd className="text-zinc-200 mt-0.5 truncate">{value}</dd>
     </div>
-  )
+  );
 }
